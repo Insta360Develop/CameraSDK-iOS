@@ -4,10 +4,10 @@ iOS SDK to control Insta360 cameras.
 ### Integration
 
 1. embed the INSCameraSDK and INSCoreMedia frameworks to your project target.
-![embedframework](./images/embedframework.png)
+<div align=center><img src="./images/embedframework.png"/></div>
 
-2. add an item in the Info.plist. Key is *Supported external accessory protocols*, value is an Array with 3 items `com.insta360.camera`(Nano), `com.insta360.onecontrol`(ONE), `com.insta360.onexcontrol`(ONE X) and `com.insta360.nanoscontrol`(Nano S)
-![infoplist](./images/infoplist.png)
+2. add an item in the Info.plist. Key is *Supported external accessory protocols*, value is an Array with 3 items `com.insta360.camera`(Nano), `com.insta360.onecontrol`(ONE), `com.insta360.onexcontrol`(ONE X), `com.insta360.nanoscontrol`(Nano S) and `com.insta360.onercontrol`(ONE R)
+<div align=center><img src="./images/infoplist.png"/></div>
 
 3. Add the following code in your AppDelegate, or somewhere your app is ready to work with Insta360 cameras.
 
@@ -23,7 +23,7 @@ iOS SDK to control Insta360 cameras.
 
 4. Call `[[INSCameraManager sharedManager] shutdown]` when your app won't listen on Insta360 cameras any more.
 
-### Monitor Connection of Insta360 Nano, ONE, Nano S Cameras
+### Monitor Connection of Insta360 Nano, ONE, Nano S, ONE R Cameras
 
 - register notification for `[NSNotificationCenter defaultCenter]` with the name of `INSCameraDidConnectNotification` or `INSCameraDidDisconnectNotification`
 
@@ -333,11 +333,11 @@ if ([parser open]) {
 
 * Insta360 fisheye distortion:
 
-![INSFisheyeDistortion](./images/INSFisheyeDistortion.png)
+<div align=left><img src="./images/INSFisheyeDistortion.png"/></div>
 
 * Opencv fisheye distortion:
 
-![OpenCVFisheyeDistortion](./images/OpenCVFisheyeDistortion.png)
+<div align=left><img src="./images/OpenCVFisheyeDistortion.png"/></div>
 
 Using `INSOffsetParser` to get the `INSOffsetParameter` internal parameters
 

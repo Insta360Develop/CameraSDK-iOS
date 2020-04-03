@@ -1,12 +1,27 @@
 # CameraSDK-iOS
 iOS SDK to control Insta360 cameras.
 
+### Supported platforms
+
+| Platform | Version |
+| :--- | :--- |
+| iOS | 8.4 or later |
+
+### Carthage
+
+[Carthage](https://github.com/Carthage/Carthage) is a decentralized dependency manager that builds your dependencies and provides you with binary frameworks. To integrate Alamofire into your Xcode project using Carthage, specify it in your `Cartfile`:
+
+```ogdl
+binary "https://ios-releases.insta360.com/INSCoreMedia.json" == 1.20.1
+binary "https://ios-releases.insta360.com/INSCameraSDK-osc.json" == 2.5.5
+```
+
 ### Integration
 
 1. embed the INSCameraSDK and INSCoreMedia frameworks to your project target.
 <div align=center><img src="./images/embedframework.png"/></div>
 
-2. add an item in the Info.plist. Key is *Supported external accessory protocols*, value is an Array with 3 items `com.insta360.camera`(Nano), `com.insta360.onecontrol`(ONE), `com.insta360.onexcontrol`(ONE X), `com.insta360.nanoscontrol`(Nano S) and `com.insta360.onercontrol`(ONE R)
+2. add an item in the Info.plist. Key is *Supported external accessory protocols*, value is an Array with following items `com.insta360.camera`(Nano), `com.insta360.onecontrol`(ONE), `com.insta360.onexcontrol`(ONE X), `com.insta360.nanoscontrol`(Nano S) and `com.insta360.onercontrol`(ONE R)
 <div align=center><img src="./images/infoplist.png"/></div>
 
 3. Add the following code in your AppDelegate, or somewhere your app is ready to work with Insta360 cameras.
@@ -72,7 +87,7 @@ NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url
 [request setHTTPBody:postData];
 
 NSURLSession *session = [NSURLSession sharedSession];
-[[session dataTaskWithRequest:[[NSURLRequest alloc] init]
+[[session dataTaskWithRequest:request
             completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
     if (error) {
         NSLog(@"%@", error);
@@ -103,8 +118,25 @@ You can use [`camera.listFiles`](https://developers.google.com/streetview/open-s
 
 #### 1. INSCameraSDK
 
-Not only your app can send commands to the camera, but also the app will receive some notifications from camera when some events happen. For example the batter status changes.
-All notifications are listed in `NSNotification+INSCamera.h` file. 
+Not only your app can send commands to the camera, but also the app will receive some notifications from camera when some events happen. For example the batter status or storage status changes.
+
+* All notifications are listed in `NSNotification+INSCamera.h` file.
+* All options that you can get from camera are list in `INSCameraOptionsType`.
+
+```
+- (void)fetchStorageStatus {
+    __weak typeof(self)weakSelf = self;
+    NSArray *optionTypes = @[@(INSCameraOptionsTypeStorageState),@(INSCameraOptionsTypeBatteryStatus)];
+    [[INSCameraManager sharedManager].commandManager getOptionsWithTypes:optionTypes completion:^(NSError * _Nullable error, INSCameraOptions * _Nullable options, NSArray<NSNumber *> * _Nullable successTypes) {
+        if (!options) {
+            NSLog(@"fetch options error: %@",error.description);
+            return ;
+        }
+        NSLog(@"storage status: %@",options.storageStatus);
+        NSLog(@"battery status: %@",options.batteryStatus);
+    }];
+}
+```
 
 #### 2. Open Spherical Camera API
 
@@ -156,9 +188,7 @@ Familiarity with [`Open Spherical Camera API`](https://developers.google.cn/stre
     
     [_mediaSession plug:self.previewPlayer];
     
-    _mediaSession.expectedVideoResolution = INSVideoResolution3840x1920x30;
-    _mediaSession.expectedVideoResolutionSecondary = INSVideoResolution960x480x30;
-    _mediaSession.previewStreamType = INSPreviewStreamTypeSecondary;
+    _mediaSession.expectedVideoResolution = INSVideoResolution1440x720x30;
     _mediaSession.expectedAudioSampleRate = INSAudioSampleRate48000Hz;
     _mediaSession.gyroPlayMode = INSGyroPlayModeDefault;
 }
@@ -185,6 +215,31 @@ Familiarity with [`Open Spherical Camera API`](https://developers.google.cn/stre
 
 @end
 ```
+
+#### For further preview config
+
+* You can configure the preview resolution through the following parameters of `INSCameraMediaSession`, and all supported resolutions are list in `INSCameraMediaBasic`.
+
+```
+/*!
+ *  For one、nano s,  The expected video resolution, if you want to change the value when mediaSession is running, you need to invoke commitChangesWithCompletion:
+ *  For one x, you should set resolution for both Main and Secondary stream. use 'INSPreviewStreamType' to choose which is used for preview stream.
+ */
+@property (nonatomic) INSVideoResolution expectedVideoResolution;
+
+/*!
+ *  The expected video resolution, if you want to change the value when mediaSession is running, you need to invoke commitChangesWithCompletion:
+ */
+@property (nonatomic) INSVideoResolution expectedVideoResolutionSecondary;
+
+/*!
+ *  For one X, use this to choose whether the main or secondary stream should be used as preview stream.
+ *  INSPreviewStreamTypeMain : preview with main stream
+ *  INSPreviewStreamTypeSecondary : preview with secondary stream
+ */
+@property (nonatomic) INSPreviewStreamType previewStreamType;
+```
+
 
 ### Stitch & HDR
 
@@ -245,20 +300,31 @@ if ([parser open]) {
 
 Using `INSHDRTask` to generate HDR image. HDR synthesis takes a long time and takes about 5-10 seconds. 
 
-The URLs that is passed into `INSHDROptions` is ordered array, and the array order is [ ev0, -ev, +ev ]. Through the photos taken by ONE X, the default ascending order of the file name is [ ev0, -ev, +ev ].
+The URLs that is passed into `INSHDROptions` is ordered array, and the array order is [ 0ev, -ev, +ev ]. Through the photos taken by ONE X, the default ascending order of the file name is [ 0ev, -ev, +ev ].
 
 ```objc
+NSArray *urls = @[
+    [NSURL URLWithString:@"0ev"],
+    [NSURL URLWithString:@"-ev"],
+    [NSURL URLWithString:@"+ev"],
+];
+
+INSHDROptions *options = [[INSHDROptions alloc] init];
+options.urls = urls;
+options.seamlessType = INSSeamlessTypeOpticalFlow;
+
 INSHDRTask *task = [[INSHDRTask alloc] initWithCommandManager:[INSCameraManager sharedManager].commandManager];
-[task processWithURLs:urls seamlessType:INSSeamlessTypeOpticalFlow completion:^(NSError * _Nullable error, INSHDRImageDataModel * _Nullable dataModel) {
+[task processWithOptions:options completion:^(NSError * _Nullable error, NSData * _Nullable photoData) {
     if (error) {
         NSLog(@"%@ failed with error: %@",sender.title, error);
         return ;
     }
     
-    // do anything with the HDR Mat rgb data, for example, stitched image here
-    NSString *documentPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
-    NSURL *url = [[NSURL fileURLWithPath:documentPath] URLByAppendingPathComponent:@"HDRDataRaw"];
-    [dataModel.data writeToURL:url atomically:YES];
+    // do anything with the stitched image here, for example, display it
+    if (photoData) {
+        UIImage *image = [[UIImage alloc] initWithData:photoData];
+        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
+    }
 }];
 ```
 

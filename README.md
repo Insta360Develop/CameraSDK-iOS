@@ -26,8 +26,7 @@ binary "https://ios-releases.insta360.com/INSCameraSDK-osc.json" == 2.5.5
 
 3. Add the following code in your AppDelegate, or somewhere your app is ready to work with Insta360 cameras.
 
-```objc
-// Objective-C
+```Objective-C
 #import <INSCameraSDK/INSCameraSDK.h>
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
@@ -123,7 +122,7 @@ Not only your app can send commands to the camera, but also the app will receive
 * All notifications are listed in `NSNotification+INSCamera.h` file.
 * All options that you can get from camera are list in `INSCameraOptionsType`.
 
-```
+```Objective-C
 - (void)fetchStorageStatus {
     __weak typeof(self)weakSelf = self;
     NSArray *optionTypes = @[@(INSCameraOptionsTypeStorageState),@(INSCameraOptionsTypeBatteryStatus)];
@@ -159,7 +158,7 @@ Familiarity with [`Open Spherical Camera API`](https://developers.google.cn/stre
 
 #### Preview
 
-```objc
+```Objective-C
 #import <UIKit/UIKit.h>
 #import <INSCameraSDK/INSCameraSDK.h>
 
@@ -220,7 +219,7 @@ Familiarity with [`Open Spherical Camera API`](https://developers.google.cn/stre
 
 * You can configure the preview resolution through the following parameters of `INSCameraMediaSession`, and all supported resolutions are list in `INSCameraMediaBasic`.
 
-```
+```Objective-C
 /*!
  *  For one、nano s,  The expected video resolution, if you want to change the value when mediaSession is running, you need to invoke commitChangesWithCompletion:
  *  For one x, you should set resolution for both Main and Secondary stream. use 'INSPreviewStreamType' to choose which is used for preview stream.
@@ -249,7 +248,7 @@ Retrieve thumbnail data from pre-existing files by `INSImageInfoParser` which re
 
 You can get thumbnail render and configure output size via `[[INSFlatPanoOffscreenRender alloc] initWithRenderWidth: height:]`
 
-```objc
+```Objective-C
 // [ev0, -ev, +ev]
 NSMutableArray<NSURL *> *urls = [[NSMutableArray alloc] init];
 NSArray *fileNames = @[@"IMG_20181029_182547_00_295", @"IMG_20181029_182547_00_296", @"IMG_20181029_182547_00_297"];
@@ -275,7 +274,7 @@ Using `INSImageInfoParser` to get the gyroscope data, offset, resolution, etc.
 
 Using `INSFlatPanoOffscreenRender` to get a flat pano image. ( P.s. The parameter, `offset` is nonnull )
 
-```objc 
+```Objective-C
 INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:urls.firstObject];
 if ([parser open]) {
     UIImage *origin = [[UIImage alloc] initWithContentsOfFile:urls.firstObject.path];
@@ -302,7 +301,7 @@ Using `INSHDRTask` to generate HDR image. HDR synthesis takes a long time and ta
 
 The URLs that is passed into `INSHDROptions` is ordered array, and the array order is [ 0ev, -ev, +ev ]. Through the photos taken by ONE X, the default ascending order of the file name is [ 0ev, -ev, +ev ].
 
-```objc
+```Objective-C
 NSArray *urls = @[
     [NSURL URLWithString:@"0ev"],
     [NSURL URLWithString:@"-ev"],
@@ -330,7 +329,7 @@ INSHDRTask *task = [[INSHDRTask alloc] initWithCommandManager:[INSCameraManager 
 
 The HDR synthesis algorithm library is divided into two types: ONE X recommends `INSHDRLibInsImgProc`.
 
-```objc
+```Objective-C
 typedef NS_ENUM(NSUInteger, INSHDRLib) {
     /// using `OpenCV` to generate hdr image
     INSHDRLibOpenCV,
@@ -342,7 +341,7 @@ typedef NS_ENUM(NSUInteger, INSHDRLib) {
 
 The following two stitching algorithms are encapsulated in HDR synthesis process:
 
-```objc
+```Objective-C
 typedef NS_ENUM(NSUInteger, INSSeamlessType) {
     /// default type
     INSSeamlessTypeTemplate,
@@ -356,7 +355,7 @@ typedef NS_ENUM(NSUInteger, INSSeamlessType) {
 
 * You can get the `INSMediaGyro` which contains `ax, ay, az, gx, gy, gz` via `INSImageInfoParser`
 
-```objc
+```Objective-C
 INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:urls.firstObject];
 if ([parser open]) {
 	NSLog(@"%@",parser.gyroData);
@@ -374,7 +373,7 @@ NSLog(@"%@", gyro);
 
 Gyroscopic correction of 2:1 planar images that have been stitched can be done by `INSFlatGyroAdjustOffscreenRender`:
 
-```objc 
+```Objective-C
 INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:urls.firstObject];
 if ([parser open]) {
     UIImage *origin = [[UIImage alloc] initWithContentsOfFile:urls.firstObject.path];
@@ -407,7 +406,7 @@ if ([parser open]) {
 
 Using `INSOffsetParser` to get the `INSOffsetParameter` internal parameters
 
-```objc
+```Objective-C
 INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:urls.firstObject];
 if ([parser open]) {
     INSExtraInfo *extraInfo = parser.extraInfo;

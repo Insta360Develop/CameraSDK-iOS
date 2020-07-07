@@ -1,22 +1,47 @@
+<img src="https://img.shields.io/badge/Platform-iOS(10.0, *)-blue">
+</a>
+<img src="https://img.shields.io/badge/Version-2.6.9-blue">
+</a>
+[![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+[![OSC compatible](https://img.shields.io/badge/OSC-compatible-brightgreen)](ttps://developers.google.com/streetview/open-spherical-camera/reference)
+
 # CameraSDK-iOS
-iOS SDK to control Insta360 cameras.
 
-### Supported platforms
+You can learn how to control the insta360 camera in the following section
 
-| Platform | Version |
-| :--- | :--- |
-| iOS | 8.4 or later |
+- Camera support [Open Spherical Camera API level 2](https://developers.google.com/streetview/open-spherical-camera/reference), except preview stream. Familiarity with [`Open Spherical Camera API - Commands`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/commands) official documentation is a prerequisite for OSC development.
 
-### Carthage
+## Table of Contents
 
-[Carthage](https://github.com/Carthage/Carthage) is a decentralized dependency manager that builds your dependencies and provides you with binary frameworks. To integrate Alamofire into your Xcode project using Carthage, specify it in your `Cartfile`:
+- [Integration](#Integration)
+	- [Carthage](#Carthage)
+	- [Setup](#Setup)
+- [Connection](#Connection)
+- [Commands](#Commands)
+- [Working with audio & video streams](#Audio_Video_Stream)
+	- [Control center](#Control_center)
+	- [Preview](#Preview)
+	- [For further preview config](#Further_Config)
+- [Medias](#Medias)
+	- [INSExtraInfo](#INSExtraInfo)
+	- [Thumbnail](#Thumbnail)
+	- [Stitch](#Stitch)
+	- [Generate HDR image](#Generate_HDR_image)
+	- [Gyroscope data](#Gyroscope_data)
+- [Internal parameters](#Internal_parameters)
+
+## <a name="Integration" />Integration</a>
+
+### <a name="Carthage" />Carthage</a>
+
+Carthage is a decentralized dependency manager that builds your dependencies and provides you with binary frameworks. To integrate INSCameraSDK & INSCoreMedia into your Xcode project using Carthage, specify it in your `Cartfile`:
 
 ```ogdl
-binary "https://ios-releases.insta360.com/INSCoreMedia.json" == 1.20.1
-binary "https://ios-releases.insta360.com/INSCameraSDK-osc.json" == 2.5.5
+binary "https://ios-releases.insta360.com/INSCoreMedia.json" == 1.25.4
+binary "https://ios-releases.insta360.com/INSCameraSDK-osc.json" == 2.6.9
 ```
 
-### Integration
+### <a name="Setup" />Setup</a>
 
 1. embed the INSCameraSDK and INSCoreMedia frameworks to your project target.
 <div align=center><img src="./images/embedframework.png"/></div>
@@ -24,7 +49,7 @@ binary "https://ios-releases.insta360.com/INSCameraSDK-osc.json" == 2.5.5
 2. add an item in the Info.plist. Key is *Supported external accessory protocols*, value is an Array with following items `com.insta360.camera`(Nano), `com.insta360.onecontrol`(ONE), `com.insta360.onexcontrol`(ONE X), `com.insta360.nanoscontrol`(Nano S) and `com.insta360.onercontrol`(ONE R)
 <div align=center><img src="./images/infoplist.png"/></div>
 
-3. Add the following code in your AppDelegate, or somewhere your app is ready to work with Insta360 cameras.
+3. Add the following code in your AppDelegate, or somewhere your app is ready to work with Insta360 cameras. Call `[[INSCameraManager sharedManager] shutdown]` when your app won't listen on Insta360 cameras any more.
 
 ```objc
 // Objective-C
@@ -36,17 +61,38 @@ binary "https://ios-releases.insta360.com/INSCameraSDK-osc.json" == 2.5.5
 }
 ```
 
-4. Call `[[INSCameraManager sharedManager] shutdown]` when your app won't listen on Insta360 cameras any more.
 
-### Monitor Connection of Insta360 Nano, ONE, Nano S, ONE R Cameras
+## <a name="Connection" />Connection</a>
+
+If you connect camera via wifi, you need to set the host to `http://192.168.42.1`. and if you connect camera via the Lightning interface, you need to changed the host to `http://localhost:9099`.
+
+We recommend that you use the following methods to convert of URL and path
+
+```Objective-C
+/// convert (photo or video) resource uri to http url via http tunnel and Wi-Fi socket
+extern NSURL *INSHTTPURLForResourceURI(NSString *uri);
+
+/// convert local http url to (photo or video) resource uri
+extern NSString *INSResourceURIFromHTTPURL(NSURL *url);
+```
+
+### <a name="OSC" />OSC</a>
+
+The camera already supports the [`/osc/info`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/info) and [`/osc/state`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/state) commands. You can use these commands to get basic information about the camera and the features it supports.
+
+### <a name="INS_Protocol" />INS Protocol</a>
+
+#### <a name="Status" />Status</a>
+
+You can monitor the connection status of the camera in the following ways:
 
 - register notification for `[NSNotificationCenter defaultCenter]` with the name of `INSCameraDidConnectNotification` or `INSCameraDidDisconnectNotification`
 
-- you can also add KVO on `[INSCameraManager SharedManager].cameraState`, once the cameraState changes to INSCameraStateConnected, your app is able to send commands to the camera.
+- add KVO on `[INSCameraManager SharedManager].cameraState`, once the cameraState changes to INSCameraStateConnected, your app is able to send commands to the camera.
 
-#### Heartbeats
+#### <a name="Heartbeat" />Heartbeat</a>
 
-- When you connect your camera via wifi, you need to send heartbeat information to the camera at 2 Hz.
+When you connect your camera via wifi, you need to send heartbeat information to the camera at 2 Hz.
 
 ```objc
 // Objective-C
@@ -54,19 +100,13 @@ binary "https://ios-releases.insta360.com/INSCameraSDK-osc.json" == 2.5.5
 
 ```
 
-### Send commands
+## <a name="Commands" />Commands</a>
 
-Familiarity with [`Open Spherical Camera API - Commands`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/commands) official documentation is a prerequisite for OSC development.
+### <a name="Commands_OSC" />OSC</a>
 
-The camera network address is `http://192.168.42.1`.Execute commands via Open Sepherial Camera API[`/osc/commands/execute`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/commands/execute)
+Execute commands via Open Sepherial Camera API[`/osc/commands/execute`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/commands/execute)
 
-You need to poll yourself to call [`/osc/commands/status`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/commands/status) to get the execution status of the camera on the current command. The polling cycle can be adjusted according to specific conditions.
-
-Camera support [Open Spherical Camera API level 2](https://developers.google.com/streetview/open-spherical-camera/reference), except preview stream.
-
-#### Connecting with Lightning Interface
-
-When connecting a camera with the Lightning interface, the camera address needs to be changed to `http://localhost:9099`
+You need to poll yourself to call [`/osc/commands/status`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/commands/status) to get the execution status of the camera on the current command. The polling cycle can be adjusted according to specific conditions. Here is a sample code shows how to execute a `camera.takePicture` command.
 
 ```Objective-C
 #import <Foundation/Foundation.h>
@@ -78,7 +118,7 @@ NSDictionary *parameters = @{ @"name": @"camera.takePicture" };
 
 NSData *postData = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:nil];
 
-NSURL *url = [NSURL URLWithString:@"http://localhost:9099/osc/commands/execute"];
+NSURL *url = [NSURL URLWithString:@"#CameraHost#/commands/execute"];
 NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url
                                                        cachePolicy:NSURLRequestUseProtocolCachePolicy
                                                    timeoutInterval:10.0];
@@ -98,30 +138,29 @@ NSURLSession *session = [NSURLSession sharedSession];
 }] resume];
 ```
 
-#### Take picture & Record
-
-* You can use [`camera.takePicture`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/takepicture) to take picture.
-* You can use [`camera.startCapture`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/startcapture) to start record.
-* You can use [`camera.stopCapture `](https://developers.google.com/streetview/open-spherical-camera/reference/camera/stopcapture) to stop record.
-
-#### Options
+#### <a name="OSC_Options" />Options</a>
 
 * You can use [`camera.setOptions`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/setoptions) to set options.
 * You can use [`camera.getOptions`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/getoptions) to get options.
 * You can know the relevant parameters supported by the camera from [Open Spherical Camera API options](https://developers.google.com/streetview/open-spherical-camera/reference/options).
 
-#### List files
+#### <a name="OSC_Take_picture_Record" />Take picture & Record</a>
+
+* You can use [`camera.takePicture`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/takepicture) to take picture.
+* You can use [`camera.startCapture`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/startcapture) to start record.
+* You can use [`camera.stopCapture `](https://developers.google.com/streetview/open-spherical-camera/reference/camera/stopcapture) to stop record.
+
+#### <a name="OSC_List_files" />List files</a>
 
 You can use [`camera.listFiles`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/listfiles) to get the files list.
 
-### Status & Informations
+### <a name="Commands_INS_Protocol" />INS Protocol</a>
 
-#### 1. INSCameraSDK
+You can learn all the commands supported by the SDK from `INSCameraCommands.h`, and `INSCameraCommandOptions.h` shows the structure needed by all commands. All options that you can get from camera are list in `INSCameraOptionsType`.
 
-Not only your app can send commands to the camera, but also the app will receive some notifications from camera when some events happen. For example the batter status or storage status changes.
+`NSNotification+INSCamera.h` show that the application can get the notification of camera by monitoring.
 
-* All notifications are listed in `NSNotification+INSCamera.h` file.
-* All options that you can get from camera are list in `INSCameraOptionsType`.
+Here is a sample code shows how to get storage & battery through `getOptionsWithTypes:completion:`
 
 ```
 - (void)fetchStorageStatus {
@@ -138,16 +177,9 @@ Not only your app can send commands to the camera, but also the app will receive
 }
 ```
 
-#### 2. Open Spherical Camera API
+## <a name="INS_Protocol_Audio_Video_Stream" />Working with audio & video streams</a>
 
-Familiarity with [`Open Spherical Camera API`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc) official documentation is a prerequisite for OSC development.
-
-* You can use [`/osc/info`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/info) to get the basic information about the camera and functionality it supports.
-* You can use [`/osc/state`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/state) to get the attributes of the camera.
-
-### Working with audio & video streams
-
-#### Control center - `INSCameraMediaSession`
+### <a name="Control_center" />Control center - `INSCameraMediaSession`</a>
 
 `INSCameraMediaSession` is the central class to work with audio & video streams for Nano or ONE camera. It has these functions:
 
@@ -157,7 +189,7 @@ Familiarity with [`Open Spherical Camera API`](https://developers.google.cn/stre
 4. Distribute outputs to `INSCameraMediaPluggable` such as `INSCameraFlatPanoOutput`.
 5. When the session is running, you can change the input configurations, plug or unplug pluggables, make the changes working by call `commitChangesWithCompletion:`.
 
-#### Preview
+### <a name="Preview" />Preview</a>
 
 ```objc
 #import <UIKit/UIKit.h>
@@ -205,7 +237,9 @@ Familiarity with [`Open Spherical Camera API`](https://developers.google.cn/stre
 #pragma mark INSCameraPreviewPlayerDelegate
 - (NSString *)offsetToPlay:(INSCameraPreviewPlayer *)player {
     NSString *mediaOffset = [INSCameraManager sharedManager].currentCamera.settings.mediaOffset;
-    if ([[INSCameraManager sharedManager].currentCamera.name isEqualToString:kInsta360CameraNameOneX]
+    if (([[INSCameraManager sharedManager].currentCamera.name isEqualToString:kInsta360CameraNameOneX]
+         || [[INSCameraManager sharedManager].currentCamera.name isEqualToString:kInsta360CameraNameOneR]
+         || [[INSCameraManager sharedManager].currentCamera.name isEqualToString:kInsta360CameraNameOneX2])
         && [INSLensOffset isValidOffset:mediaOffset]) {
         return [INSOffsetCalculator convertOffset:mediaOffset toType:INSOffsetConvertTypeOneX3040_2_2880];
     }
@@ -216,7 +250,7 @@ Familiarity with [`Open Spherical Camera API`](https://developers.google.cn/stre
 @end
 ```
 
-#### For further preview config
+### <a name="Further_Config" />For further preview config</a>
 
 * You can configure the preview resolution through the following parameters of `INSCameraMediaSession`, and all supported resolutions are list in `INSCameraMediaBasic`.
 
@@ -238,65 +272,205 @@ Familiarity with [`Open Spherical Camera API`](https://developers.google.cn/stre
  *  INSPreviewStreamTypeSecondary : preview with secondary stream
  */
 @property (nonatomic) INSPreviewStreamType previewStreamType;
+
+/*!
+ *  VR180 and gyroPlayMode == RemoveYawRotations, this should be set to INSPreviewStreamRotationRaw180
+ */
+@property (nonatomic) INSPreviewStreamRotation previewStreamRotation;
+
+/*!
+ * The mode used to calibrate the video, default is INSGyroPlayModeDefault.
+ */
+@property (nonatomic) INSGyroPlayMode gyroPlayMode;
+
+/*!
+ *  The encoding format of video real-time stream, default is INSVideoEncodeH264.
+ */
+@property (nonatomic) INSVideoEncode videoStreamEncode;
 ```
 
+## <a name="Medias" />Medias</a>
 
-### Stitch & HDR
+There is a special data segment in the video or photo captured by Insta360 camera, which is called INSExtraInfo. The INSExtraInfo contains the corresponding file's thumbnail, extra metedata, gyroscope data, etc. For more information, please check `INSExtraInfo.h`.
 
-#### Thumbnail
+In general, we suggests that you obtain the above information from a file whose file name `(VIN Channel)(Stream Num)` is '00'. For example: `IMG_19700101_000000_00_001.insp`.
 
-Retrieve thumbnail data from pre-existing files by `INSImageInfoParser` which resolution is 1920 * 960. And then using `INSFlatPanoOffscreenRender` to generate the thumbnail.
+If you are working on a wide angle file, and the file is a selfies file ( [how to knonw a file is a selfies file](#INSExtraInfo) ), you should use `IMG_19700101_000000_10_001.insp` which `(VIN Channel)` is '1' instead .
 
-You can get thumbnail render and configure output size via `[[INSFlatPanoOffscreenRender alloc] initWithRenderWidth: height:]`
+- fileName format: `(IMG/VID)_Date_Time_(VIN Channel)(Stream Num)_Serial.Extension`
+
+### <a name="INSExtraInfo" />INSExtraInfo</a>
+
+INSExtraInfo contains the corresponding file's thumbnail, extra metedata, gyroscope data, etc. You can get the above information through `INSImageInfoParser`/`INSVideoInfoParser`.
 
 ```objc
-// [ev0, -ev, +ev]
-NSMutableArray<NSURL *> *urls = [[NSMutableArray alloc] init];
-NSArray *fileNames = @[@"IMG_20181029_182547_00_295", @"IMG_20181029_182547_00_296", @"IMG_20181029_182547_00_297"];
-for (NSString *fileName in fileNames) {
-    NSString *path = [[NSBundle mainBundle] pathForResource:fileName ofType:@"jpg"];
-    NSURL *url = [NSURL fileURLWithPath:path];
-    [urls addObject:url];
+NSURL *url = #source url#
+INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];
+if ([parser open]) {
+    BOOL isLensSelfies = parser.extraInfo.metadata.lensSelfies;
 }
+```
 
-INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:urls.firstObject];
+```objc
+NSURL *url = #source url#
+INSVideoInfoParser *parser = [[INSVideoInfoParser alloc] initWithURL:url];
+if ([parser openFast]) {
+    BOOL isLensSelfies = parser.extraInfo.metadata.lensSelfies;
+}
+```
+
+### <a name="Thumbnail" />Thumbnail</a>
+
+#### <a name="Thumbnail_Photos" />Photos</a>
+
+You can get the pre stored thumbnail data in the file through `INSImageInfoParser`. 
+
+```objc
+NSURL *url = #source url#
+INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];
 if ([parser open]) {
     NSData *data = parser.extraInfo.thumbnail;
     UIImage *thumbnail = [[UIImage alloc] initWithData:data];
+}
+```
+If you are working on a panoramic file, you also need to stitch the file, see [how to stitch image](#Stitch).
+
+#### <a name="Thumbnail_Videos" />Videos</a>
+
+You can get the pre stored thumbnail data in the file through `INSVideoInfoParser`. 
+
+```objc
+NSURL *url = #source url#
+INSVideoInfoParser *parser = [[INSVideoInfoParser alloc] initWithURL:url];
+
+UIImage *thumbnail;
+if ([parser openFast]) {
+    INSThumbnailRender *render = [[INSThumbnailRender alloc] init];
     
-    CGSize outputSize = CGSizeMake(CGRectGetWidth(self.view.bounds), CGRectGetWidth(self.view.bounds) / 2);
-    UIImage *output = [weakSelf stitchImage:thumbnail extraInfo:parser.extraInfo outputSize:outputSize];
+    NSData *data = parser.extraInfo.thumbnail;
+    CVPixelBufferRef buffer = [render copyPixelBufferWithDecodeH264Data:data];
+    
+    // if and only if the video resolution is 5.7k, the thumbnails are divided into thumbnail and ext_thumbnail
+    if (parser.extraInfo.metadata.dimension.width == INSVideoResolution2880x2880x30.width
+        && parser.extraInfo.metadata.dimension.height == INSVideoResolution2880x2880x30.height) {
+        NSData *extData = parser.extraInfo.ext_thumbnail;
+        CVPixelBufferRef extBuffer = [render copyPixelBufferWithDecodeH264Data: extData];
+        thumbnail = [UIImage imageWithPixelBuffer:buffer rightPixelBuffer:extBuffer];
+    } else {
+        thumbnail = [UIImage imageWithPixelBuffer:buffer];
+    }
+}
+```
+If you are working on a panoramic file, you also need to do a splicing of the file, see [how to stitch thumbnail of video](#Stitch).
+
+### <a name="Stitch" />Stitch</a>
+
+The following parameters are needed to correct and stitch a picture:
+
+- offset
+- gyroscope data
+- resolution
+
+Here is a sample code shows how to get these parameters:
+
+```objc 
+#pragma mark Photos
+
+NSURL *url = #source url#
+INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];
+if ([parser open]) {
+    // offset
+    NSString *offset = parser.extraInfo.metadata.offset;
+
+    // resolution
+    CGSize resolution = parser.extraInfo.metadata.dimension;
+
+    // gyroscope data
+    INSExtraGyroData *gyroData = parser.extraInfo.gyroData;
 }
 ```
 
-#### Stitch
+```objc 
+#pragma mark Videos
 
-Using `INSImageInfoParser` to get the gyroscope data, offset, resolution, etc.
+NSURL *url = #source url#
+INSVideoInfoParser *parser = [[INSVideoInfoParser alloc] initWithURL:url];
+if ([parser openFast]) {
+    // offset
+    NSString *offset = parser.extraInfo.metadata.offset;
+
+    // thumbnail
+    CGSize resolution = parser.extraInfo.metadata.dimension;
+
+    // gyroscope data
+    INSExtraGyroData *gyroData = parser.extraInfo.gyroData;
+}
+```
+
+#### <a name="Stitch_Photos" />Photos</a>
 
 Using `INSFlatPanoOffscreenRender` to get a flat pano image. ( P.s. The parameter, `offset` is nonnull )
 
 ```objc 
-INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:urls.firstObject];
+// if it is the original image, we suggests that using `parser.extraInfo.metadata.dimension`
+CGSize outputSize = #output size#
+UIImage *origin = #photo thumbnail to be stitched#
+
+NSURL *url = #source url#
+INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];
 if ([parser open]) {
-    UIImage *origin = [[UIImage alloc] initWithContentsOfFile:urls.firstObject.path];
-    
-    CGSize outputSize = parser.extraInfo.metadata.dimension;
     INSFlatPanoOffscreenRender *render = [[INSFlatPanoOffscreenRender alloc] initWithRenderWidth:outputSize.width height:outputSize.height];
-	render.eulerAdjust = extraInfo.metadata.euler;
-	render.offset = extraInfo.metadata.offset;
-	
-	render.gyroStabilityOrientation = GLKQuaternionIdentity;
-	if (extraInfo.gyroData) {
-	    INSGyroPBPlayer *gyroPlayer = [[INSGyroPBPlayer alloc] initWithPBGyroData:extraInfo.gyroData];
-	    GLKQuaternion orientation = [gyroPlayer getImageOrientationWithRenderType:INSRenderTypeFlatPanoRender];
-	    render.gyroStabilityOrientation = orientation;
-	}
-	
-	UIImage *output = [render setRenderImage:image];
+    render.eulerAdjust = parser.extraInfo.metadata.euler;
+    render.offset = parser.extraInfo.metadata.offset;
+    
+    render.gyroStabilityOrientation = GLKQuaternionIdentity;
+    if (parser.extraInfo.gyroData) {
+        INSGyroPBPlayer *gyroPlayer = [[INSGyroPBPlayer alloc] initWithPBGyroData:parser.extraInfo.gyroData];
+        GLKQuaternion orientation = [gyroPlayer getImageOrientationWithRenderType:INSRenderTypeFlatPanoRender];
+        render.gyroStabilityOrientation = orientation;
+    }
+    
+    [render setRenderImage:origin];
+    UIImage *output = [render renderToImage];
 }
 ```
 
-### Generate HDR image
+#### <a name="Stitch_Videos" />Videos</a>
+
+Using `INSFlatPanoOffscreenRender` to get a flat pano image. ( P.s. The parameter, `offset` is nonnull )
+
+```objc 
+// if it is the original image, we suggests that using `parser.extraInfo.metadata.dimension`
+CGSize outputSize = #output size#
+CVPixelBufferRef buffer = #video thumbnail to be stitched#
+
+// if and only if the video resolution is 5.7k, the thumbnails are divided into thumbnail and ext_thumbnail
+CVPixelBufferRef extBuffer = #video thumbnail to be stitched#
+
+NSURL *url = #source url#
+INSVideoInfoParser *parser = [[INSVideoInfoParser alloc] initWithURL:url];
+if ([parser openFast]) {
+    INSFlatPanoOffscreenRender *render = [[INSFlatPanoOffscreenRender alloc] initWithRenderWidth:outputSize.width height:outputSize.height];
+    render.eulerAdjust = parser.extraInfo.metadata.euler;
+    render.offset = parser.extraInfo.metadata.offset;
+    
+    render.gyroStabilityOrientation = GLKQuaternionIdentity;
+    if (parser.extraInfo.gyroData) {
+        INSGyroPBPlayer *gyroPlayer = [[INSGyroPBPlayer alloc] initWithPBGyroData:parser.extraInfo.gyroData];
+        GLKQuaternion orientation = [gyroPlayer getImageOrientationWithRenderType:INSRenderTypeFlatPanoRender];
+        render.gyroStabilityOrientation = orientation;
+    }
+    
+    if (buffer && extBuffer) {
+        [render setRenderPixelBuffer:buffer right:extBuffer timestamp:parser.extraInfo.metadata.thumbnailGyroTimestamp];
+    } else if (buffer) {
+        [render setRenderPixelBuffer:buffer timestamp:parser.extraInfo.metadata.thumbnailGyroTimestamp];
+    }
+    UIImage *output = [render renderToImage];
+}
+```
+
+### <a name="Generate_HDR_image" />Generate HDR image</a>
 
 Using `INSHDRTask` to generate HDR image. HDR synthesis takes a long time and takes about 5-10 seconds. 
 
@@ -352,12 +526,13 @@ typedef NS_ENUM(NSUInteger, INSSeamlessType) {
 };
 ```
 
-### Gyroscope data - `INSMediaGyro`
+## <a name="Gyroscope_data" />Gyroscope data - `INSMediaGyro`</a>
 
 * You can get the `INSMediaGyro` which contains `ax, ay, az, gx, gy, gz` via `INSImageInfoParser`
 
 ```objc
-INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:urls.firstObject];
+NSURL *url = #source url#
+INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];
 if ([parser open]) {
 	NSLog(@"%@",parser.gyroData);
 }
@@ -370,32 +545,36 @@ INSMediaGyro *gyro = extraInfo.metadata.gyro;
 NSLog(@"%@", gyro);
 ```
 
-#### Media gyro ajust
+### <a name="Media_gyro_ajust" />Media gyro ajust</a>
 
-Gyroscopic correction of 2:1 planar images that have been stitched can be done by `INSFlatGyroAdjustOffscreenRender`:
+You can use `INSFlatGyroAdjustOffscreenRender` to correct the stitched image:
 
 ```objc 
-INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:urls.firstObject];
+// if it is the original image, we suggests that using `parser.extraInfo.metadata.dimension`
+CGSize outputSize = #output size#
+UIImage *origin = #photo thumbnail to be stitched#
+
+NSURL *url = #source url#
+INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];
 if ([parser open]) {
-    UIImage *origin = [[UIImage alloc] initWithContentsOfFile:urls.firstObject.path];
-    
     CGSize outputSize = parser.extraInfo.metadata.dimension;
     INSFlatGyroAdjustOffscreenRender *render = [[INSFlatGyroAdjustOffscreenRender alloc] initWithRenderWidth:outputSize.width height:outputSize.height];
-	render.eulerAdjust = extraInfo.metadata.euler;
-	render.offset = extraInfo.metadata.offset;
-	
-	render.gyroStabilityOrientation = GLKQuaternionIdentity;
-	if (extraInfo.gyroData) {
-	    INSGyroPBPlayer *gyroPlayer = [[INSGyroPBPlayer alloc] initWithPBGyroData:extraInfo.gyroData];
-	    GLKQuaternion orientation = [gyroPlayer getImageOrientationWithRenderType:INSRenderTypeFlatPanoRender];
-	    render.gyroStabilityOrientation = orientation;
-	}
-	
-	UIImage *output = [render setRenderImage:image];
+    render.eulerAdjust = parser.extraInfo.metadata.euler;
+    render.offset = parser.extraInfo.metadata.offset;
+    
+    render.gyroStabilityOrientation = GLKQuaternionIdentity;
+    if (parser.extraInfo.gyroData) {
+        INSGyroPBPlayer *gyroPlayer = [[INSGyroPBPlayer alloc] initWithPBGyroData:parser.extraInfo.gyroData];
+        GLKQuaternion orientation = [gyroPlayer getImageOrientationWithRenderType:INSRenderTypeFlatPanoRender];
+        render.gyroStabilityOrientation = orientation;
+    }
+    
+    [render setRenderImage:origin];
+    UIImage *output = [render renderToImage];
 }
 ```
 
-### Internal parameters
+## <a name="Internal_parameters" />Internal parameters</a>
 
 * Insta360 fisheye distortion:
 
@@ -408,17 +587,17 @@ if ([parser open]) {
 Using `INSOffsetParser` to get the `INSOffsetParameter` internal parameters
 
 ```objc
-INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:urls.firstObject];
+NSURL *url = #source url#
+INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];
 if ([parser open]) {
     INSExtraInfo *extraInfo = parser.extraInfo;
     
     INSOffsetParser *offsetParser =
-    [[INSOffsetParser alloc] initWithOffset:parser.offset width:extraInfo.metadata.dimension.width
+    [[INSOffsetParser alloc] initWithOffset:parser.extraInfo.metadata.offset
+                                      width:extraInfo.metadata.dimension.width
                                      height:extraInfo.metadata.dimension.height];
     for (INSOffsetParameter *param in offsetParser.parameters) {
         NSLog(@"Internal parameters: %@", param);
     }
 }
 ```
-
-### try the sample project and have a look at the header files for more details

@@ -51,8 +51,7 @@ binary "https://ios-releases.insta360.com/INSCameraSDK-osc.json" == 2.6.9
 
 3. Add the following code in your AppDelegate, or somewhere your app is ready to work with Insta360 cameras. Call `[[INSCameraManager sharedManager] shutdown]` when your app won't listen on Insta360 cameras any more.
 
-```objc
-// Objective-C
+```Objective-C
 #import <INSCameraSDK/INSCameraSDK.h>
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
@@ -94,7 +93,7 @@ You can monitor the connection status of the camera in the following ways:
 
 When you connect your camera via wifi, you need to send heartbeat information to the camera at 2 Hz.
 
-```objc
+```Objective-C
 // Objective-C
 [[INSCameraManager socketManager].commandManager sendHeartbeatsWithOptions:nil]
 
@@ -162,7 +161,7 @@ You can learn all the commands supported by the SDK from `INSCameraCommands.h`, 
 
 Here is a sample code shows how to get storage & battery through `getOptionsWithTypes:completion:`
 
-```
+```Objective-C
 - (void)fetchStorageStatus {
     __weak typeof(self)weakSelf = self;
     NSArray *optionTypes = @[@(INSCameraOptionsTypeStorageState),@(INSCameraOptionsTypeBatteryStatus)];
@@ -191,7 +190,7 @@ Here is a sample code shows how to get storage & battery through `getOptionsWith
 
 ### <a name="Preview" />Preview</a>
 
-```objc
+```Objective-C
 #import <UIKit/UIKit.h>
 #import <INSCameraSDK/INSCameraSDK.h>
 
@@ -254,7 +253,7 @@ Here is a sample code shows how to get storage & battery through `getOptionsWith
 
 * You can configure the preview resolution through the following parameters of `INSCameraMediaSession`, and all supported resolutions are list in `INSCameraMediaBasic`.
 
-```
+```Objective-C
 /*!
  *  For one、nano s,  The expected video resolution, if you want to change the value when mediaSession is running, you need to invoke commitChangesWithCompletion:
  *  For one x, you should set resolution for both Main and Secondary stream. use 'INSPreviewStreamType' to choose which is used for preview stream.
@@ -303,7 +302,7 @@ If you are working on a wide angle file, and the file is a selfies file ( [how t
 
 INSExtraInfo contains the corresponding file's thumbnail, extra metedata, gyroscope data, etc. You can get the above information through `INSImageInfoParser`/`INSVideoInfoParser`.
 
-```objc
+```Objective-C
 NSURL *url = #source url#
 INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];
 if ([parser open]) {
@@ -311,7 +310,7 @@ if ([parser open]) {
 }
 ```
 
-```objc
+```Objective-C
 NSURL *url = #source url#
 INSVideoInfoParser *parser = [[INSVideoInfoParser alloc] initWithURL:url];
 if ([parser openFast]) {
@@ -325,7 +324,7 @@ if ([parser openFast]) {
 
 You can get the pre stored thumbnail data in the file through `INSImageInfoParser`. 
 
-```objc
+```Objective-C
 NSURL *url = #source url#
 INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];
 if ([parser open]) {
@@ -339,7 +338,7 @@ If you are working on a panoramic file, you also need to stitch the file, see [h
 
 You can get the pre stored thumbnail data in the file through `INSVideoInfoParser`. 
 
-```objc
+```Objective-C
 NSURL *url = #source url#
 INSVideoInfoParser *parser = [[INSVideoInfoParser alloc] initWithURL:url];
 
@@ -373,7 +372,7 @@ The following parameters are needed to correct and stitch a picture:
 
 Here is a sample code shows how to get these parameters:
 
-```objc 
+```Objective-C 
 #pragma mark Photos
 
 NSURL *url = #source url#
@@ -390,7 +389,7 @@ if ([parser open]) {
 }
 ```
 
-```objc 
+```Objective-C 
 #pragma mark Videos
 
 NSURL *url = #source url#
@@ -411,7 +410,7 @@ if ([parser openFast]) {
 
 Using `INSFlatPanoOffscreenRender` to get a flat pano image. ( P.s. The parameter, `offset` is nonnull )
 
-```objc 
+```Objective-C 
 // if it is the original image, we suggests that using `parser.extraInfo.metadata.dimension`
 CGSize outputSize = #output size#
 UIImage *origin = #photo thumbnail to be stitched#
@@ -439,7 +438,7 @@ if ([parser open]) {
 
 Using `INSFlatPanoOffscreenRender` to get a flat pano image. ( P.s. The parameter, `offset` is nonnull )
 
-```objc 
+```Objective-C 
 // if it is the original image, we suggests that using `parser.extraInfo.metadata.dimension`
 CGSize outputSize = #output size#
 CVPixelBufferRef buffer = #video thumbnail to be stitched#
@@ -476,7 +475,7 @@ Using `INSHDRTask` to generate HDR image. HDR synthesis takes a long time and ta
 
 The URLs that is passed into `INSHDROptions` is ordered array, and the array order is [ 0ev, -ev, +ev ]. Through the photos taken by ONE X, the default ascending order of the file name is [ 0ev, -ev, +ev ].
 
-```objc
+```Objective-C
 NSArray *urls = @[
     [NSURL URLWithString:@"0ev"],
     [NSURL URLWithString:@"-ev"],
@@ -504,7 +503,7 @@ INSHDRTask *task = [[INSHDRTask alloc] initWithCommandManager:[INSCameraManager 
 
 The HDR synthesis algorithm library is divided into two types: ONE X recommends `INSHDRLibInsImgProc`.
 
-```objc
+```Objective-C
 typedef NS_ENUM(NSUInteger, INSHDRLib) {
     /// using `OpenCV` to generate hdr image
     INSHDRLibOpenCV,
@@ -516,7 +515,7 @@ typedef NS_ENUM(NSUInteger, INSHDRLib) {
 
 The following two stitching algorithms are encapsulated in HDR synthesis process:
 
-```objc
+```Objective-C
 typedef NS_ENUM(NSUInteger, INSSeamlessType) {
     /// default type
     INSSeamlessTypeTemplate,
@@ -530,7 +529,7 @@ typedef NS_ENUM(NSUInteger, INSSeamlessType) {
 
 * You can get the `INSMediaGyro` which contains `ax, ay, az, gx, gy, gz` via `INSImageInfoParser`
 
-```objc
+```Objective-C
 NSURL *url = #source url#
 INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];
 if ([parser open]) {
@@ -540,7 +539,7 @@ if ([parser open]) {
 
 * If there is an `INSExtraInfo` instance, `INSMediaGyro` can be directly obtained.
 
-```objc
+```Objective-C
 INSMediaGyro *gyro = extraInfo.metadata.gyro;
 NSLog(@"%@", gyro);
 ```
@@ -549,7 +548,7 @@ NSLog(@"%@", gyro);
 
 You can use `INSFlatGyroAdjustOffscreenRender` to correct the stitched image:
 
-```objc 
+```Objective-C 
 // if it is the original image, we suggests that using `parser.extraInfo.metadata.dimension`
 CGSize outputSize = #output size#
 UIImage *origin = #photo thumbnail to be stitched#
@@ -586,7 +585,7 @@ if ([parser open]) {
 
 Using `INSOffsetParser` to get the `INSOffsetParameter` internal parameters
 
-```objc
+```Objective-C
 NSURL *url = #source url#
 INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];
 if ([parser open]) {

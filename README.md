@@ -7,7 +7,7 @@
 
 You can learn how to control the insta360 camera in the following section
 
-- Camera support [Open Spherical Camera API level 2](https://developers.google.com/streetview/open-spherical-camera/reference), except preview stream. Familiarity with [`Open Spherical Camera API - Commands`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/commands) official documentation is a prerequisite for OSC development.
+- Camera supports the control command of [Open Spherical Camera API level 2](https://developers.google.com/streetview/open-spherical-camera/reference), except preview stream. Familiarity with [`Open Spherical Camera API - Commands`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/commands) official documentation is a prerequisite for OSC development.
 
 ## Table of Contents
 
@@ -47,18 +47,6 @@ binary "https://ios-releases.insta360.com/INSCameraSDK-osc.json" == 2.6.9
 2. add an item in the Info.plist. Key is *Supported external accessory protocols*, value is an Array with following items `com.insta360.camera`(Nano), `com.insta360.onecontrol`(ONE), `com.insta360.onexcontrol`(ONE X), `com.insta360.nanoscontrol`(Nano S) and `com.insta360.onercontrol`(ONE R)
 <div align=center><img src="./images/infoplist.png"/></div>
 
-3. Add the following code in your AppDelegate, or somewhere your app is ready to work with Insta360 cameras. Call `[[INSCameraManager sharedManager] shutdown]` when your app won't listen on Insta360 cameras any more.
-
-```Objective-C
-#import <INSCameraSDK/INSCameraSDK.h>
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    [[INSCameraManager sharedManager] setup];
-    return YES;
-}
-```
-
-
 ## <a name="Connection" />Connection</a>
 
 If you connect camera via wifi, you need to set the host to `http://192.168.42.1`. and if you connect camera via the Lightning interface, you need to changed the host to `http://localhost:9099`.
@@ -78,6 +66,17 @@ extern NSString *INSResourceURIFromHTTPURL(NSURL *url);
 The camera already supports the [`/osc/info`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/info) and [`/osc/state`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/state) commands. You can use these commands to get basic information about the camera and the features it supports.
 
 ### <a name="INS_Protocol" />INS Protocol</a>
+
+Add the following code in your AppDelegate, or somewhere your app is ready to work with Insta360 cameras via the Lightning interface. And if you're connected to the camera via WiFi, you should add `[[INSCameraManager socketManager] setup]` once where you need to start the socket connection. The connection is asynchronous. You need to monitor the connection status and operate the camera when the connection status is `INSCameraStateConnected`. What's more, call `[[INSCameraManager sharedManager] shutdown]` when your app won't listen on Insta360 cameras any more. [see connection monitoring](#Status)
+
+```Objective-C
+#import <INSCameraSDK/INSCameraSDK.h>
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    [[INSCameraManager sharedManager] setup];
+    return YES;
+}
+```
 
 #### <a name="Status" />Status</a>
 
@@ -171,6 +170,8 @@ NSArray *optionTypes = @[@(INSCameraOptionsTypeStorageState),@(INSCameraOptionsT
 ```
 
 ## <a name="INS_Protocol_Audio_Video_Stream" />Working with audio & video streams</a>
+
+Audio and video stream is based on INS protocol. If you need to use the streams, make sure that the connection state of `INSCameraManager.cameraState` is `INSCameraStateConnected`. see [INS Protocol connection](#INS_Protocol)
 
 ### <a name="Control_center" />Control center - `INSCameraMediaSession`</a>
 

@@ -247,15 +247,25 @@ Audio and video stream is based on INS protocol. If you need to preview the came
 }
 
 - (void)updateConfiguration {
-    _mediaSession.expectedVideoResolution = #main stream resolution#;
-    _mediaSession.expectedVideoResolutionSecondary = #secondary stream resolution#;
-    _mediaSession.previewStreamType = #use main stream or secondary stream to preview#;
-    _mediaSession.expectedAudioSampleRate = #audio sample rate#;
-    _mediaSession.videoStreamEncode = #preview stream encode#;
+    // main stream resolution
+    _mediaSession.expectedVideoResolution = INSVideoResolution1920x960x30;
     
+    // secondary stream resolution
+    _mediaSession.expectedVideoResolutionSecondary = INSVideoResolution960x480x30;
+    
+    // use main stream or secondary stream to preview
+    _mediaSession.previewStreamType = INSPreviewStreamTypeSecondary;
+    
+    // audio sample rate
+    _mediaSession.expectedAudioSampleRate = INSAudioSampleRate48000Hz;
+    
+    // preview stream encode
+    _mediaSession.videoStreamEncode = INSVideoEncodeH264;
+    
+    // gyroscope correction mode
     // If you are in panoramic preview, use `INSGyroPlayModeDefault`.
     // If you are in wide angle preview, use `INSGyroPlayModeFootageMotionSmooth`.
-    _mediaSession.gyroPlayMode = #gyroscope correction mode#;
+    _mediaSession.gyroPlayMode = INSGyroPlayModeDefault;
 }
 
 - (void)setupRenderView {

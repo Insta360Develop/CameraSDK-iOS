@@ -203,6 +203,19 @@ Audio and video stream is based on INS protocol. If you need to preview the came
 
 @implementation ViewController
 
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        _videoEncode = INSVideoEncodeH264;
+        _mediaSession = [[INSCameraMediaSession alloc] init];
+    }
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    return [super initWithCoder:aDecoder];
+}
+
 - (void)dealloc {
     [_mediaSession stopRunningWithCompletion:^(NSError * _Nullable error) {
         NSLog(@"stop media session with err: %@", error);

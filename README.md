@@ -96,7 +96,6 @@ When you connect your camera via wifi, you need to send heartbeat information to
 ```Objective-C
 // Objective-C
 [[INSCameraManager socketManager].commandManager sendHeartbeatsWithOptions:nil]
-
 ```
 
 ## <a name="Commands" />Commands</a>
@@ -162,18 +161,15 @@ You can learn all the commands supported by the SDK from `INSCameraCommands.h`, 
 Here is a sample code shows how to get storage & battery through `getOptionsWithTypes:completion:`
 
 ```Objective-C
-- (void)fetchStorageStatus {
-    __weak typeof(self)weakSelf = self;
-    NSArray *optionTypes = @[@(INSCameraOptionsTypeStorageState),@(INSCameraOptionsTypeBatteryStatus)];
-    [[INSCameraManager sharedManager].commandManager getOptionsWithTypes:optionTypes completion:^(NSError * _Nullable error, INSCameraOptions * _Nullable options, NSArray<NSNumber *> * _Nullable successTypes) {
-        if (!options) {
-            NSLog(@"fetch options error: %@",error.description);
-            return ;
-        }
-        NSLog(@"storage status: %@",options.storageStatus);
-        NSLog(@"battery status: %@",options.batteryStatus);
-    }];
-}
+NSArray *optionTypes = @[@(INSCameraOptionsTypeStorageState),@(INSCameraOptionsTypeBatteryStatus)];
+[[INSCameraManager sharedManager].commandManager getOptionsWithTypes:optionTypes completion:^(NSError * _Nullable error, INSCameraOptions * _Nullable options, NSArray<NSNumber *> * _Nullable successTypes) {
+    if (!options) {
+        NSLog(@"fetch options error: %@",error.description);
+        return ;
+    }
+    NSLog(@"storage status: %@",options.storageStatus);
+    NSLog(@"battery status: %@",options.batteryStatus);
+}];
 ```
 
 ## <a name="INS_Protocol_Audio_Video_Stream" />Working with audio & video streams</a>
@@ -251,7 +247,7 @@ Here is a sample code shows how to get storage & battery through `getOptionsWith
 
 ### <a name="Further_Config" />For further preview config</a>
 
-* You can configure the preview resolution through the following parameters of `INSCameraMediaSession`, and all supported resolutions are list in `INSCameraMediaBasic`.
+* You can configure the preview resolution through the following parameters of `INSCameraMediaSession`, and all supported resolutions are list in `INSCameraMediaBasic.h`.
 
 ```Objective-C
 /*!
@@ -360,7 +356,7 @@ if ([parser openFast]) {
     }
 }
 ```
-If you are working on a panoramic file, you also need to do a splicing of the file, see [how to stitch thumbnail of video](#Stitch).
+If you are working on a panoramic file, you also need to do a splicing of the file, see [how to stitch image](#Stitch).
 
 ### <a name="Stitch" />Stitch</a>
 
@@ -411,7 +407,7 @@ if ([parser openFast]) {
 Using `INSFlatPanoOffscreenRender` to get a flat pano image. ( P.s. The parameter, `offset` is nonnull )
 
 ```Objective-C 
-// if it is the original image, we suggests that using `parser.extraInfo.metadata.dimension`
+// if it is the original image, we recommend that outputsize be set to `parser.extraInfo.metadata.dimension`
 CGSize outputSize = #output size#
 UIImage *origin = #photo thumbnail to be stitched#
 
@@ -439,7 +435,7 @@ if ([parser open]) {
 Using `INSFlatPanoOffscreenRender` to get a flat pano image. ( P.s. The parameter, `offset` is nonnull )
 
 ```Objective-C 
-// if it is the original image, we suggests that using `parser.extraInfo.metadata.dimension`
+// if it is the original image, we recommend that outputsize be set to `parser.extraInfo.metadata.dimension`
 CGSize outputSize = #output size#
 CVPixelBufferRef buffer = #video thumbnail to be stitched#
 
@@ -501,7 +497,7 @@ INSHDRTask *task = [[INSHDRTask alloc] initWithCommandManager:[INSCameraManager 
 }];
 ```
 
-The HDR synthesis algorithm library is divided into two types: ONE X recommends `INSHDRLibInsImgProc`.
+You can choose the following two lib for HDR synthesis, and the preferred lib is `INSHDRLibInsImgProc`.
 
 ```Objective-C
 typedef NS_ENUM(NSUInteger, INSHDRLib) {
@@ -513,7 +509,7 @@ typedef NS_ENUM(NSUInteger, INSHDRLib) {
 };
 ```
 
-The following two stitching algorithms are encapsulated in HDR synthesis process:
+You can choose the following two algorithms for HDR synthesis, and the preferred algorithms is `INSSeamlessTypeOpticalFlow`.
 
 ```Objective-C
 typedef NS_ENUM(NSUInteger, INSSeamlessType) {
@@ -525,26 +521,29 @@ typedef NS_ENUM(NSUInteger, INSSeamlessType) {
 };
 ```
 
-## <a name="Gyroscope_data" />Gyroscope data - `INSMediaGyro`</a>
+### <a name="Gyroscope_data" />Gyroscope data - `INSMediaGyro`</a>
 
-* You can get the `INSMediaGyro` which contains `ax, ay, az, gx, gy, gz` via `INSImageInfoParser`
+* You can get the gyroscope data(`INSMediaGyro`) of `INSExtraInfo.metadata.thumbnailGyroTimestamp` through `INSImageInfoParser`. `INSMediaGyro` shows the `ax, ay, az, gx, gy, gz` information of the gyroscope.
 
 ```Objective-C
 NSURL *url = #source url#
 INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];
 if ([parser open]) {
-	NSLog(@"%@",parser.gyroData);
+	NSLog(@"%@",parser.extraInfo.metadata.gyro);
 }
 ```
 
-* If there is an `INSExtraInfo` instance, `INSMediaGyro` can be directly obtained.
+* You can get the complete gyroscope data in the following ways:
 
 ```Objective-C
-INSMediaGyro *gyro = extraInfo.metadata.gyro;
-NSLog(@"%@", gyro);
+NSURL *url = #source url#
+INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];
+if ([parser open]) {
+	NSLog(@"%@",parser.extraInfo.gyroData);
+}
 ```
 
-### <a name="Media_gyro_ajust" />Media gyro ajust</a>
+#### <a name="Media_gyro_ajust" />Media gyro ajust</a>
 
 You can use `INSFlatGyroAdjustOffscreenRender` to correct the stitched image:
 

@@ -1,7 +1,5 @@
-<img src="https://img.shields.io/badge/Platform-iOS(10.0, *)-blue">
-</a>
-<img src="https://img.shields.io/badge/Version-2.6.9-blue">
-</a>
+<img src="https://img.shields.io/badge/Platform-iOS(10.0, *)-blue"></img>
+<img src="https://img.shields.io/badge/Version-2.6.9-blue"></img>
 [![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![OSC compatible](https://img.shields.io/badge/OSC-compatible-brightgreen)](ttps://developers.google.com/streetview/open-spherical-camera/reference)
 

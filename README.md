@@ -169,7 +169,7 @@ NSArray *optionTypes = @[@(INSCameraOptionsTypeStorageState),@(INSCameraOptionsT
 }];
 ```
 
-## <a name="INS_Protocol_Audio_Video_Stream" />Working with audio & video streams</a>
+## <a name="Audio_Video_Stream" />Working with audio & video streams</a>
 
 Audio and video stream is based on INS protocol. If you need to preview the camera in real time, make sure that the `INSCameraManager.cameraState` is `INSCameraStateConnected`. see [INS Protocol connection](#INS_Protocol)
 

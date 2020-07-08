@@ -393,7 +393,7 @@ if ([parser openFast]) {
     // offset
     NSString *offset = parser.extraInfo.metadata.offset;
 
-    // thumbnail
+    // resolution
     CGSize resolution = parser.extraInfo.metadata.dimension;
 
     // gyroscope data

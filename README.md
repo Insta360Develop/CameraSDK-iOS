@@ -234,14 +234,14 @@ Audio and video stream is based on INS protocol. If you need to preview the came
 }
 
 - (void)updateConfiguration {
-    _mediaSession.expectedVideoResolution = _configurationVC.inputVideoResolution;
-    _mediaSession.expectedVideoResolutionSecondary = _configurationVC.inputVideoResolution2;
-    _mediaSession.previewStreamType = INSPreviewStreamTypeWithValue(_configurationVC.previewStreamNum);
-    _mediaSession.expectedAudioSampleRate = _configurationVC.audioSampleRate;
-    _mediaSession.videoStreamEncode = _videoEncode;
+    _mediaSession.expectedVideoResolution = #main stream resolution#;
+    _mediaSession.expectedVideoResolutionSecondary = #secondary stream resolution#;
+    _mediaSession.previewStreamType = #use main stream or secondary stream to preview#;
+    _mediaSession.expectedAudioSampleRate = #audio sample rate#;
+    _mediaSession.videoStreamEncode = #preview stream encode#;
     
-    XLFormRowDescriptor *row = [self.form formRowWithTag:@"Gyro Statiblity On"];
-    _mediaSession.gyroPlayMode = [row.value boolValue] ? _configurationVC.gyroPlayMode : INSGyroPlayModeNone;
+    // If you are in panoramic preview, use `INSGyroPlayModeDefault`; and if you are in wide angle preview, use INSGyroPlayModeFootageMotionSmooth.
+    _mediaSession.gyroPlayMode = #gyroscope correction mode#;
 }
 
 - (void)setupRenderView {

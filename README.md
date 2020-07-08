@@ -197,16 +197,57 @@ Audio and video stream is based on INS protocol. If you need to preview the came
 
 @property (nonatomic, strong) INSCameraStorageStatus *storageState;
 
+@property (nonatomic, assign) INSVideoEncode videoEncode;
+
 @end
 
 @implementation ViewController
 
+- (void)dealloc {
+    [_mediaSession stopRunningWithCompletion:^(NSError * _Nullable error) {
+        NSLog(@"stop media session with err: %@", error);
+    }];
+    
+    [[INSCameraManager usbManager] removeObserver:self forKeyPath:@"cameraState"];
+    [[INSCameraManager socketManager] removeObserver:self forKeyPath:@"cameraState"];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    _mediaSession = [[INSCameraMediaSession alloc] init];
+    [[INSCameraManager usbManager] addObserver:self forKeyPath:@"cameraState" options:NSKeyValueObservingOptionNew context:nil];
+    [[INSCameraManager socketManager] addObserver:self forKeyPath:@"cameraState" options:NSKeyValueObservingOptionNew context:nil];
+    
+    [self setupRenderView];
+}
 
-    _previewPlayer = [[INSCameraPreviewPlayer alloc] initWithFrame:self.view.bounds
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    if ([INSCameraManager sharedManager].currentCamera) {
+        __weak typeof(self)weakSelf = self;
+        [self fetchOptionsWithCompletion:^{
+            [weakSelf updateConfiguration];
+            [weakSelf runMediaSession];
+        }];
+    }
+}
+
+- (void)updateConfiguration {
+    _mediaSession.expectedVideoResolution = _configurationVC.inputVideoResolution;
+    _mediaSession.expectedVideoResolutionSecondary = _configurationVC.inputVideoResolution2;
+    _mediaSession.previewStreamType = INSPreviewStreamTypeWithValue(_configurationVC.previewStreamNum);
+    _mediaSession.expectedAudioSampleRate = _configurationVC.audioSampleRate;
+    _mediaSession.videoStreamEncode = _videoEncode;
+    
+    XLFormRowDescriptor *row = [self.form formRowWithTag:@"Gyro Statiblity On"];
+    _mediaSession.gyroPlayMode = [row.value boolValue] ? _configurationVC.gyroPlayMode : INSGyroPlayModeNone;
+}
+
+- (void)setupRenderView {
+    CGFloat height = CGRectGetHeight(self.view.bounds) * 0.333;
+    CGRect frame = CGRectMake(0, CGRectGetHeight(self.view.bounds) - height, CGRectGetWidth(self.view.bounds), height);
+    _previewPlayer = [[INSCameraPreviewPlayer alloc] initWithFrame:frame
                                                         renderType:INSRenderTypeSphericalPanoRender];
     [_previewPlayer playWithGyroTimestampAdjust:30.f];
     _previewPlayer.delegate = self;
@@ -214,18 +255,78 @@ Audio and video stream is based on INS protocol. If you need to preview the came
     
     [_mediaSession plug:self.previewPlayer];
     
-    _mediaSession.expectedVideoResolution = INSVideoResolution1440x720x30;
-    _mediaSession.expectedAudioSampleRate = INSAudioSampleRate48000Hz;
-    _mediaSession.gyroPlayMode = INSGyroPlayModeDefault;
+    // adjust field of view parameters
+    NSString *offset = [INSCameraManager sharedManager].currentCamera.settings.mediaOffset;
+    if (offset) {
+        NSInteger rawValue = [[INSLensOffset alloc] initWithOffset:offset].lensType;
+        if (rawValue == INSLensTypeOneR577Wide || rawValue == INSLensTypeOneR283Wide) {
+            _previewPlayer.renderView.enablePanGesture = NO;
+            _previewPlayer.renderView.enablePinchGesture = NO;
+            
+            _previewPlayer.renderView.render.camera.xFov = 37;
+            _previewPlayer.renderView.render.camera.distance = 700;
+        }
+    }
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
+- (void)fetchOptionsWithCompletion:(nullable void (^)(void))completion {
+    __weak typeof(self)weakSelf = self;
+    NSArray *optionTypes = @[@(INSCameraOptionsTypeStorageState),@(INSCameraOptionsTypeVideoEncode)];
+    [[INSCameraManager sharedManager].commandManager getOptionsWithTypes:optionTypes completion:^(NSError * _Nullable error, INSCameraOptions * _Nullable options, NSArray<NSNumber *> * _Nullable successTypes) {
+        if (!options) {
+            [weakSelf showAlertWith:@"Get options" message:error.description];
+            completion();
+            return ;
+        }
+        weakSelf.storageState = options.storageStatus;
+        weakSelf.videoEncode = options.videoEncode;
+        completion();
+    }];
+}
+
+- (void)runMediaSession {
+    if ([INSCameraManager sharedManager].cameraState != INSCameraStateConnected) {
+        return ;
+    }
     
     __weak typeof(self)weakSelf = self;
-    [_mediaSession stopRunningWithCompletion:^(NSError * _Nullable error) {
-        [weakSelf runMediaSession];
-    }];
+    if (_mediaSession.running) {
+        self.view.userInteractionEnabled = NO;
+        [_mediaSession commitChangesWithCompletion:^(NSError * _Nullable error) {
+            NSLog(@"commitChanges media session with error: %@",error);
+            weakSelf.view.userInteractionEnabled = YES;
+            if (error) {
+                [weakSelf showAlertWith:@"commitChanges media failed" message:error.description];
+            }
+        }];
+    }
+    else {
+        self.view.userInteractionEnabled = NO;
+        [_mediaSession startRunningWithCompletion:^(NSError * _Nullable error) {
+            NSLog(@"start running media session with error: %@",error);
+            weakSelf.view.userInteractionEnabled = YES;
+            if (error) {
+                [weakSelf showAlertWith:@"start media failed" message:error.description];
+                [weakSelf.previewPlayer playWithSmoothBuffer:NO];
+            }
+        }];
+    }
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    if ([keyPath isEqualToString:@"cameraState"]) {
+        INSCameraState state = [change[NSKeyValueChangeNewKey] unsignedIntegerValue];
+        switch (state) {
+            case INSCameraStateFound:
+                break;
+            case INSCameraStateConnected:
+                [self runMediaSession];
+                break;
+            default:
+                [_mediaSession stopRunningWithCompletion:nil];
+                break;
+        }
+    }
 }
 
 #pragma mark INSCameraPreviewPlayerDelegate

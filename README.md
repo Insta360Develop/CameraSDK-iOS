@@ -240,7 +240,8 @@ Audio and video stream is based on INS protocol. If you need to preview the came
     _mediaSession.expectedAudioSampleRate = #audio sample rate#;
     _mediaSession.videoStreamEncode = #preview stream encode#;
     
-    // If you are in panoramic preview, use `INSGyroPlayModeDefault`; and if you are in wide angle preview, use `INSGyroPlayModeFootageMotionSmooth`.
+    // If you are in panoramic preview, use `INSGyroPlayModeDefault`.
+    // If you are in wide angle preview, use `INSGyroPlayModeFootageMotionSmooth`.
     _mediaSession.gyroPlayMode = #gyroscope correction mode#;
 }
 

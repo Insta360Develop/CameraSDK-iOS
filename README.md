@@ -35,8 +35,8 @@ You can learn how to control the insta360 camera in the following section
 Carthage is a decentralized dependency manager that builds your dependencies and provides you with binary frameworks. To integrate INSCameraSDK & INSCoreMedia into your Xcode project using Carthage, specify it in your Cartfile:
 
 ```ogdl
-binary "#By applying for authorization from insta360#" == 1.25.4
-binary "#By applying for authorization from insta360#" == 2.6.9
+binary "#By applying for authorization from Insta360#" == 1.25.4
+binary "#By applying for authorization from Insta360#" == 2.6.9
 ```
 
 ### <a name="Setup" />Setup</a>

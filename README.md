@@ -1,5 +1,5 @@
 <img src="https://img.shields.io/badge/Platform-iOS(10.0, *)-blue"></img>
-<img src="https://img.shields.io/badge/Version-2.6.9-blue"></img>
+<img src="https://img.shields.io/badge/Version-2.6.10-blue"></img>
 [![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![OSC compatible](https://img.shields.io/badge/OSC-compatible-brightgreen)](ttps://developers.google.com/streetview/open-spherical-camera/reference)
 
@@ -20,12 +20,15 @@ You can learn how to control the insta360 camera in the following section
 	- [Control center](#Control_center)
 	- [Preview](#Preview)
 	- [For further preview config](#Further_Config)
+	- [Stitched outputs](#Stitched_outputs)
+	- [RTMP Living](#RTMP_Living)
 - [Medias](#Medias)
 	- [INSExtraInfo](#INSExtraInfo)
 	- [Thumbnail](#Thumbnail)
 	- [Stitch](#Stitch)
 	- [Generate HDR image](#Generate_HDR_image)
 	- [Gyroscope data](#Gyroscope_data)
+	- [EXIF & XMP](#EXIF&XMP)
 - [Internal parameters](#Internal_parameters)
 
 ## <a name="Integration" />Integration</a>
@@ -36,7 +39,7 @@ Carthage is a decentralized dependency manager that builds your dependencies and
 
 ```ogdl
 binary "#By applying for authorization from Insta360#" == 1.25.4
-binary "#By applying for authorization from Insta360#" == 2.6.9
+binary "#By applying for authorization from Insta360#" == 2.6.10
 ```
 
 ### <a name="Setup" />Setup</a>
@@ -65,7 +68,7 @@ extern NSString *INSResourceURIFromHTTPURL(NSURL *url);
 
 The camera already supports the [`/osc/info`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/info) and [`/osc/state`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/state) commands. You can use these commands to get basic information about the camera and the features it supports.
 
-### <a name="INS_Protocol" />INS Protocol</a>
+### <a name="INS_Protocol" />SCMP(Spherical Camera Messaging Protocol)</a>
 
 Add the following code in your AppDelegate, or somewhere your app is ready to work with Insta360 cameras via the Lightning interface. And if you're connected to the camera via WiFi, you should add `[[INSCameraManager socketManager] setup]` once where you need to start the socket connection. The connection is asynchronous. You need to monitor the connection status and operate the camera when the connection status is `INSCameraStateConnected`. What's more, call `[[INSCameraManager sharedManager] shutdown]` when your app won't listen on Insta360 cameras any more. [see connection monitoring](#Status)
 
@@ -149,7 +152,7 @@ NSURLSession *session = [NSURLSession sharedSession];
 
 You can use [`camera.listFiles`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/listfiles) to get the files list.
 
-### <a name="Commands_INS_Protocol" />INS Protocol</a>
+### <a name="Commands_INS_Protocol" />SCMP(Spherical Camera Messaging Protocol)</a>
 
 You can learn all the commands supported by the SDK from `INSCameraCommands.h`, and `INSCameraCommandOptions.h` shows the structure needed by all commands. All options that you can get from camera are list in `INSCameraOptionsType`.
 
@@ -169,9 +172,98 @@ NSArray *optionTypes = @[@(INSCameraOptionsTypeStorageState),@(INSCameraOptionsT
 }];
 ```
 
+#### <a name="Take_Picture" />Take Picture</a>
+
+Call `takePictureWithOptions:completion`, the photo will be saved into the SD card without transferring data to the iOS app
+
+- When you are setting the EV parameter for HDR photography, make sure that you have EV=0 as the first parameter followed by the rest of EV levels in ascending orders. For instance, if the EV interval is set at 1 and it consist of 5 captures for a HDR image, the EV array should go as [0, -2, -1, 1, 2].
+
+```Objective-C
+INSTakePictureOptions *options = [[INSTakePictureOptions alloc] init];
+options.mode = INSPhotoModeAeb;
+options.AEBEVBias = @[@(0), @(-2), @(-1), @(1), @(2)];
+options.generateManually = YES;
+
+[[INSCameraManager sharedManager].commandManager takePictureWithOptions:options completion:^(NSError * _Nullable error, INSCameraPhotoInfo * _Nullable photoInfo) {
+    NSLog(@"take hdr picture: %@, %@",photoInfo.uri,photoInfo.hdrUris);
+}];
+```
+
+#### <a name="Set_Photography_Options" />Set Photography Options</a>
+
+The INSCameraSDK also provide you the API to change photography options, such as EV, white balance，exposure program, iso and shutter.
+
+As the shutter speed of still and video may be different, set stillExposure to manual program will not effect the live stream, so you need to call `setPhotographyOptions` again to set the liveStream's videoExposure. Note that the shutter speed of videoExposure should not be larger than 1.0/framerate.
+
+```Objective-C
+// live stream
+INSCameraExposureOptions *videoExposureOptions = [[INSCameraExposureOptions alloc] init];
+videoExposureOptions.program = INSCameraExposureProgramManual;
+videoExposureOptions.iso = 200;
+videoExposureOptions.shutterSpeed = CMTimeMake(1, 30);
+
+INSPhotographyOptions *options = [[INSPhotographyOptions alloc] init];
+options.videoExposure = videoExposureOptions;
+
+NSArray *types = @[@(INSPhotographyOptionsTypeVideoExposureOptions)];
+[[INSCameraManager sharedManager].commandManager
+ setPhotographyOptions:options forFunctionMode:INSCameraFunctionModeLiveStream
+ types:types completion:^(NSError * _Nullable error, NSArray<NSNumber *> * _Nullable successTypes) {
+    NSLog(@"Set Photogtaphy Options %@",error);
+}];
+```
+
+```Objective-C
+// take normal picture
+INSCameraExposureOptions *stillExposureOptions = [[INSCameraExposureOptions alloc] init];
+stillExposureOptions.program = INSCameraExposureProgramManual;
+stillExposureOptions.iso = 200;
+stillExposureOptions.shutterSpeed = CMTimeMake(5, 1);
+
+INSPhotographyOptions *options = [[INSPhotographyOptions alloc] init];
+options.stillExposure = stillExposureOptions;
+
+NSArray *types = @[@(INSPhotographyOptionsTypeStillExposureOptions)];
+[[INSCameraManager sharedManager].commandManager
+ setPhotographyOptions:options forFunctionMode:INSCameraFunctionModeNormal
+ types:types completion:^(NSError * _Nullable error, NSArray<NSNumber *> * _Nullable successTypes) {
+    NSLog(@"Set Photogtaphy Options %@",error);
+}];
+```
+
+#### <a name="SCMP_List_files" />List files</a>
+
+The file list is divided into the following interfaces:
+
+- insp(Insta360 pano image) & jpg(Insta360 wide angle image)
+
+```
+[[INSCameraManager sharedManager].commandManager fetchPhotoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraPhotoInfo *> * _Nullable photoInfoList) {
+    NSLog(@"files: %@",photoInfoList);
+}];
+```
+
+- insv(Insta360 pano video) & mp4(Insta360 wide angle video)
+
+```
+[[INSCameraManager sharedManager].commandManager fetchVideoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraPhotoInfo *> * _Nullable videoInfoList) {
+	NSLog(@"files: %@",videoInfoList);
+}];
+```
+
+- raw
+
+```
+[[INSCameraManager sharedManager].commandManager
+ fetchRawPhotoListWithCompletion:^(NSError * _Nullable error,
+  NSArray<INSCameraPhotoInfo *> * _Nullable photoInfoList) {
+    NSLog(@"files: %@",photoInfoList);
+}];
+```
+
 ## <a name="Audio_Video_Stream" />Working with audio & video streams</a>
 
-Audio and video stream is based on INS protocol. If you need to preview the camera in real time, make sure that the `INSCameraManager.cameraState` is `INSCameraStateConnected`. see [INS Protocol connection](#INS_Protocol)
+Audio and video stream is based on SCMP(Spherical Camera Messaging Protocol). If you need to preview the camera in real time, make sure that the `INSCameraManager.cameraState` is `INSCameraStateConnected`. see [SCMP(Spherical Camera Messaging Protocol) connection](#INS_Protocol)
 
 ### <a name="Control_center" />Control center - `INSCameraMediaSession`</a>
 
@@ -406,6 +498,72 @@ Audio and video stream is based on INS protocol. If you need to preview the came
  *  The encoding format of video real-time stream, default is INSVideoEncodeH264.
  */
 @property (nonatomic) INSVideoEncode videoStreamEncode;
+```
+
+### <a name="Stitched_outputs" />Stitched outputs </a>
+
+`INSCameraFlatPanoOutput` instance will produces flat panorama video and camera's audio for you.
+
+`INSCameraScreenOutput` instance will produces screen captured video and camera's audio for you.
+
+```Objective-C
+INSVideoResolution resolution = INSVideoResolution720x360x30;
+_flatPanoOutput = [[INSCameraFlatPanoOutput alloc] initWithOutputWidth:resolution.width
+                                                          outputHeight:resolution.height];
+[_flatPanoOutput setDelegate:self onDispatchQueue:nil];
+
+/*
+ *  set output pixel format to kCVPixelFormatType_32BGRA
+ *  if you want to receive the video in bgra instead of NV12 format
+ *  flatPanoOutput?.outputPixelFormat = kCVPixelFormatType_32BGRA
+ */
+[_mediaSession plug:_flatPanoOutput];
+```
+
+### <a name="RTMP_Living" />RTMP Living</a>
+
+`INSFlatRTMPStreamer` is the way to do rtmp live streaming.
+
+```Objective-C
+- (void)startLive {
+    NSInteger bitrate = 10 * 1024 * 1024;
+    NSURL *url = #live url#;
+    INSFlatRTMPStreamer *streamer =
+    [[INSFlatRTMPStreamer alloc] initWithURL:url width:3840 height:1920 fps:30 bitrate:bitrate];
+    streamer.delegate = self;
+
+    [self runMediaSession];
+    [streamer startLive];
+}
+
+- (void)runMediaSession {
+    if ([INSCameraManager sharedManager].cameraState != INSCameraStateConnected) {
+        return ;
+    }
+    
+    __weak typeof(self)weakSelf = self;
+    if (_mediaSession.running) {
+        self.view.userInteractionEnabled = NO;
+        [_mediaSession commitChangesWithCompletion:^(NSError * _Nullable error) {
+            NSLog(@"commitChanges media session with error: %@",error);
+            weakSelf.view.userInteractionEnabled = YES;
+            if (error) {
+                [weakSelf showAlertWith:@"commitChanges media failed" message:error.description];
+            }
+        }];
+    }
+    else {
+        self.view.userInteractionEnabled = NO;
+        [_mediaSession startRunningWithCompletion:^(NSError * _Nullable error) {
+            NSLog(@"start running media session with error: %@",error);
+            weakSelf.view.userInteractionEnabled = YES;
+            if (error) {
+                [weakSelf showAlertWith:@"start media failed" message:error.description];
+                [weakSelf.previewPlayer playWithSmoothBuffer:NO];
+            }
+        }];
+    }
+}
 ```
 
 ## <a name="Medias" />Medias</a>
@@ -696,6 +854,34 @@ if ([parser open]) {
 }
 ```
 
+#### <a name="EXIF&XMP" />EXIF & XMP</a>
+
+You can read or modify the EXIF and XMP information of the image through `INSImageMetadataProcessor`.
+
+The EXIF and XMP information will be lost after correction and stitch.
+If you still need to use the above information, you need to temporarily store the EXIF and XMP of the original file, and finally write back to the file after correction and stitch.
+
+```Objective-C
+UIImage *origin = #origin image#;
+// Reading metatdata & xmp
+INSImageMetadataProcessor *processor =
+    [[INSImageMetadataProcessor alloc] initWithUIImage:origin ouputType:INSImageDataTypeJPEG compression:1.0];
+NSLog(@"you can get exif from jpeg image: %@",processor.exif);
+NSLog(@"you can get xmp from jpeg image: %@",processor.xmp);
+
+// modify the source create time of jpeg image
+processor.xmp.sourceImageCreateTime = [NSDateFormatter localizedStringFromDate:[NSDate date]
+                                                                     dateStyle:NSDateFormatterFullStyle
+                                                                     timeStyle:NSDateFormatterFullStyle];
+
+// modify the exif of jpeg image
+processor.exif = [[INSImageExif alloc] initDefaultWithWidth:origin.size.width
+                                                     height:origin.size.height cameraType:@"Insta360 xxx"];
+
+// retrieve jpeg data containing exif and xmp
+NSData *result = [processor getImageData];
+```
+
 ## <a name="Internal_parameters" />Internal parameters</a>
 
 * Insta360 fisheye distortion:
@@ -715,7 +901,7 @@ if ([parser open]) {
     INSExtraInfo *extraInfo = parser.extraInfo;
     
     INSOffsetParser *offsetParser =
-    [[INSOffsetParser alloc] initWithOffset:parser.extraInfo.metadata.offset
+    [[INSOffsetParser alloc] initWithOffset:extraInfo.metadata.offset
                                       width:extraInfo.metadata.dimension.width
                                      height:extraInfo.metadata.dimension.height];
     for (INSOffsetParameter *param in offsetParser.parameters) {

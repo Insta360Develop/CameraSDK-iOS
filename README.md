@@ -249,7 +249,7 @@ The file list is divided into the following interfaces:
 ```
 [[INSCameraManager sharedManager].commandManager 
  fetchVideoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraPhotoInfo *> * _Nullable videoInfoList) {
-	NSLog(@"files: %@",videoInfoList);
+    NSLog(@"files: %@",videoInfoList);
 }];
 ```
 

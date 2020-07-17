@@ -239,7 +239,7 @@ The file list is divided into the following interfaces:
 
 ```
 [[INSCameraManager sharedManager].commandManager 
-fetchPhotoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraPhotoInfo *> * _Nullable photoInfoList) {
+ fetchPhotoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraPhotoInfo *> * _Nullable photoInfoList) {
     NSLog(@"files: %@",photoInfoList);
 }];
 ```
@@ -248,7 +248,7 @@ fetchPhotoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraPhoto
 
 ```
 [[INSCameraManager sharedManager].commandManager 
-fetchVideoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraPhotoInfo *> * _Nullable videoInfoList) {
+ fetchVideoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraPhotoInfo *> * _Nullable videoInfoList) {
 	NSLog(@"files: %@",videoInfoList);
 }];
 ```

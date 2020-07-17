@@ -238,7 +238,8 @@ The file list is divided into the following interfaces:
 - insp(Insta360 pano image) & jpg(Insta360 wide angle image)
 
 ```
-[[INSCameraManager sharedManager].commandManager fetchPhotoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraPhotoInfo *> * _Nullable photoInfoList) {
+[[INSCameraManager sharedManager].commandManager 
+fetchPhotoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraPhotoInfo *> * _Nullable photoInfoList) {
     NSLog(@"files: %@",photoInfoList);
 }];
 ```
@@ -246,7 +247,8 @@ The file list is divided into the following interfaces:
 - insv(Insta360 pano video) & mp4(Insta360 wide angle video)
 
 ```
-[[INSCameraManager sharedManager].commandManager fetchVideoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraPhotoInfo *> * _Nullable videoInfoList) {
+[[INSCameraManager sharedManager].commandManager 
+fetchVideoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraPhotoInfo *> * _Nullable videoInfoList) {
 	NSLog(@"files: %@",videoInfoList);
 }];
 ```
@@ -255,8 +257,7 @@ The file list is divided into the following interfaces:
 
 ```
 [[INSCameraManager sharedManager].commandManager
- fetchRawPhotoListWithCompletion:^(NSError * _Nullable error,
-  NSArray<INSCameraPhotoInfo *> * _Nullable photoInfoList) {
+ fetchRawPhotoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraPhotoInfo *> * _Nullable photoInfoList) {
     NSLog(@"files: %@",photoInfoList);
 }];
 ```

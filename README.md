@@ -172,6 +172,54 @@ NSArray *optionTypes = @[@(INSCameraOptionsTypeStorageState),@(INSCameraOptionsT
 }];
 ```
 
+- Here is the storage info which is listed in `INSCameraOptions.h`
+
+```Objective-C
+typedef NS_ENUM(NSUInteger, INSCameraCardState) {
+
+    INSCameraCardStateNormal = 0,
+    
+    INSCameraCardStateNoCard = 1,
+
+    INSCameraCardStateNoSpace = 2,
+
+    INSCameraCardStateInvalidFormat = 3,
+    
+    INSCameraCardStateWriteProtectCard = 4,
+    
+    INSCameraCardStateUnknownError = 5,
+};
+
+@interface INSCameraStorageStatus : NSObject
+
+@property (nonatomic) INSCameraCardState cardState;
+
+@property (nonatomic) int64_t freeSpace;
+
+@property (nonatomic) int64_t totalSpace;
+
+@end
+```
+
+- Here is the battery info which is listed in `INSCameraOptions.h`
+
+```Objective-C
+typedef NS_ENUM(NSUInteger, INSCameraPowerType) {
+    INSCameraPowerTypeBattery = 0,
+    INSCameraPowerTypeAdapter = 1,
+};
+
+@interface INSCameraBatteryStatus : NSObject
+
+@property (nonatomic) INSCameraPowerType powerType;
+
+@property (nonatomic) NSInteger batteryLevel;
+
+@property (nonatomic) NSInteger batteryScale;
+
+@end
+```
+
 #### <a name="Take_Picture" />Take Picture</a>
 
 Call `takePictureWithOptions:completion`, the photo will be saved into the SD card without transferring data to the iOS app

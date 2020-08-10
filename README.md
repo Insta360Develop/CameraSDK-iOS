@@ -1,5 +1,5 @@
 <img src="https://img.shields.io/badge/Platform-iOS(10.0, *)-blue"></img>
-<img src="https://img.shields.io/badge/Version-2.6.10-blue"></img>
+<img src="https://img.shields.io/badge/Version-2.6.14-blue"></img>
 [![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![OSC compatible](https://img.shields.io/badge/OSC-compatible-brightgreen)](ttps://developers.google.com/streetview/open-spherical-camera/reference)
 
@@ -29,6 +29,7 @@ You can learn how to control the insta360 camera in the following section
 	- [Generate HDR image](#Generate_HDR_image)
 	- [Gyroscope data](#Gyroscope_data)
 	- [EXIF & XMP](#EXIF&XMP)
+- [Playback](#Playback)
 - [Internal parameters](#Internal_parameters)
 
 ## <a name="Integration" />Integration</a>
@@ -38,8 +39,8 @@ You can learn how to control the insta360 camera in the following section
 Carthage is a decentralized dependency manager that builds your dependencies and provides you with binary frameworks. To integrate INSCameraSDK & INSCoreMedia into your Xcode project using Carthage, specify it in your Cartfile:
 
 ```ogdl
-binary "#By applying for authorization from Insta360#" == 1.25.4
-binary "#By applying for authorization from Insta360#" == 2.6.10
+binary "#By applying for authorization from Insta360#" == 1.25.5
+binary "#By applying for authorization from Insta360#" == 2.6.14
 ```
 
 ### <a name="Setup" />Setup</a>
@@ -561,7 +562,7 @@ _flatPanoOutput = [[INSCameraFlatPanoOutput alloc] initWithOutputWidth:resolutio
                                                           outputHeight:resolution.height];
 [_flatPanoOutput setDelegate:self onDispatchQueue:nil];
 
-/*
+/**
  *  set output pixel format to kCVPixelFormatType_32BGRA
  *  if you want to receive the video in bgra instead of NV12 format
  *  flatPanoOutput?.outputPixelFormat = kCVPixelFormatType_32BGRA
@@ -929,6 +930,88 @@ processor.exif = [[INSImageExif alloc] initDefaultWithWidth:origin.size.width
 
 // retrieve jpeg data containing exif and xmp
 NSData *result = [processor getImageData];
+```
+
+## <a name="Playback" />Playback</a>
+
+Using `INSRenderView` to display the pano file, and using `INSPlayer`  to play video.
+
+```Objective-C
+- (void)setupRenderView {
+    /**
+     *  if you are working with a double fish eyes file, you should set renderType to `INSRenderTypeSphericalPanoRender`
+     *  if you are working with a file which has been stitched, you should set renderType to `INSRenderTypeSphericalRender`
+     */
+    INSRenderType renderType = #renderType#;
+    INSRenderView *renderView = [[INSRenderView alloc] initWithFrame:self.view.bounds renderType: renderType];
+    [self.view addSubview:renderView];
+    self.renderView = renderView;
+}
+
+- (void)setupPreviewerWithRenderView:(INSRenderView *)renderView {
+    INSPreviewer2 *previewer = [[INSPreviewer2 alloc] init];
+    previewer.displayDelegate = renderView;
+    self.previewer = previewer;
+}
+
+// pano image playback 
+- (void)playImageWithData:(NSData *)data {
+    NSString *offset = nil;
+    switch (_renderView.render.type) {
+        // playback double fish eyes image
+        case INSRenderTypeSphericalPanoRender: {
+            INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithData: data];
+            if ([parser open]) {
+                offset = parser.offset;
+            }
+            break;
+        }
+        // playback flat pano image which has been stitched
+        case INSRenderTypeSphericalRender:
+            // do nothing
+            break;
+        default:
+            break;
+    }
+    
+    UIImage *image = [[UIImage alloc] initWithData:data];
+    [_renderView playImage:image offset:offset];
+}
+
+// pano video playback
+- (void)playVideoWithURLs:(NSArray<NSURL *> *)urls {
+    NSTimeInterval duration = 0;
+    CGFloat framerate = 0;
+    NSString *offset = nil;
+    NSInteger mediaFileSize = 0;
+    
+    INSVideoInfoParser *parser = [[INSVideoInfoParser alloc] initWithURLs:urls];
+    if ([parser openFast]) {
+        offset = parser.offset;
+        duration = parser.duration;
+        framerate = parser.framerate;
+        mediaFileSize = parser.mediaFileSize;
+    }
+    
+    // (The actual framerate of the video) / (Expected framerate for playback)
+    CGFloat factor = framerate / 30;
+    NSInteger durationMs = duration * 1000;
+    INSTimeScale *timeScale = [[INSTimeScale alloc] initWithFactor:factor startTimeMs:0 endTimeMs:durationMs];
+    
+    INSFileClip *videoClip =
+    [[INSFileClip alloc] initWithURLs:urls
+                          startTimeMs:0
+                            endTimeMs:durationMs
+                   totalSrcDurationMs:durationMs
+                           timeScales:@[timeScale]
+                             hasAudio:YES
+                        mediaFileSize:mediaFileSize];
+    [_previewer setVideoSource:@[videoClip] bgmSource:nil videoSilent:NO];
+    
+    // you can set the playback begin time. default is 0.
+    [_previewer prepareAsync:0];
+    [_renderView playVideoWithOffset:offset];
+}
 ```
 
 ## <a name="Internal_parameters" />Internal parameters</a>

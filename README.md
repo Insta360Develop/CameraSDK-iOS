@@ -954,7 +954,7 @@ Using `INSRenderView` to display the pano file, and using `INSPlayer`  to play v
     self.previewer = previewer;
 }
 
-// pano image playback 
+// pano image playback 
 - (void)playImageWithData:(NSData *)data {
     NSString *offset = nil;
     switch (_renderView.render.type) {

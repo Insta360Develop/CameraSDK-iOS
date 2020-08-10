@@ -16,13 +16,13 @@ You can learn how to control the insta360 camera in the following section
 	- [Setup](#Setup)
 - [Connection](#Connection)
 - [Commands](#Commands)
-- [Working with audio & video streams](#Audio_Video_Stream)
+- [Working with audio & video stream](#Audio_Video_Stream)
 	- [Control center](#Control_center)
 	- [Preview](#Preview)
 	- [For further preview config](#Further_Config)
 	- [Stitched outputs](#Stitched_outputs)
-	- [RTMP Living](#RTMP_Living)
-- [Medias](#Medias)
+	- [RTMP live stream](#RTMP_Live_Stream)
+- [Media](#Media)
 	- [INSExtraInfo](#INSExtraInfo)
 	- [Thumbnail](#Thumbnail)
 	- [Stitch](#Stitch)
@@ -311,7 +311,7 @@ The file list is divided into the following interfaces:
 }];
 ```
 
-## <a name="Audio_Video_Stream" />Working with audio & video streams</a>
+## <a name="Audio_Video_Stream" />Working with audio & video stream</a>
 
 Audio and video stream is based on SCMP(Spherical Camera Messaging Protocol). If you need to preview the camera in real time, make sure that the `INSCameraManager.cameraState` is `INSCameraStateConnected`. see [SCMP(Spherical Camera Messaging Protocol) connection](#INS_Protocol)
 
@@ -570,7 +570,7 @@ _flatPanoOutput = [[INSCameraFlatPanoOutput alloc] initWithOutputWidth:resolutio
 [_mediaSession plug:_flatPanoOutput];
 ```
 
-### <a name="RTMP_Living" />RTMP Living</a>
+### <a name="RTMP_Live_Stream" />RTMP live stream</a>
 
 `INSFlatRTMPStreamer` is the way to do rtmp live streaming.
 
@@ -616,7 +616,7 @@ _flatPanoOutput = [[INSCameraFlatPanoOutput alloc] initWithOutputWidth:resolutio
 }
 ```
 
-## <a name="Medias" />Medias</a>
+## <a name="Media" />Media</a>
 
 There is a special data segment in the video or photo captured by Insta360 camera, which is called INSExtraInfo. The INSExtraInfo contains the corresponding file's thumbnail, extra metedata, gyroscope data, etc. For more information, please check `INSExtraInfo.h`.
 

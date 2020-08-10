@@ -934,7 +934,7 @@ NSData *result = [processor getImageData];
 
 ## <a name="Playback" />Playback</a>
 
-Using `INSRenderView` to display the pano file, and using `INSPlayer`  to play video.
+Using `INSRenderView` to display the pano file, and using `INSPreviewer2`  to play video.
 
 ```Objective-C
 - (void)setupRenderView {

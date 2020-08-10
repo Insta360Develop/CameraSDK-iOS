@@ -958,7 +958,7 @@ Using `INSRenderView` to display the pano file, and using `INSPlayer`  to play v
 - (void)playImageWithData:(NSData *)data {
     NSString *offset = nil;
     switch (_renderView.render.type) {
-        // playback double fish eyes image
+        // double fish eyes image
         case INSRenderTypeSphericalPanoRender: {
             INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithData: data];
             if ([parser open]) {
@@ -966,7 +966,7 @@ Using `INSRenderView` to display the pano file, and using `INSPlayer`  to play v
             }
             break;
         }
-        // playback flat pano image which has been stitched
+        // flat pano image which has been stitched
         case INSRenderTypeSphericalRender:
             // do nothing
             break;

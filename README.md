@@ -848,7 +848,7 @@ You can use `INSFlatGyroAdjustOffscreenRender` to correct the stitched image:
 ```Objective-C 
 // if it is the original image, we suggests that using `parser.extraInfo.metadata.dimension`
 CGSize outputSize = #output size#
-UIImage *origin = #photo thumbnail to be stitched#
+UIImage *origin = #photo thumbnail that has been stitched#
 
 NSURL *url = #source url#
 INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];

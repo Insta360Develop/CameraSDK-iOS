@@ -1,5 +1,6 @@
 <img src="https://img.shields.io/badge/Platform-iOS(10.0, *)-blue"></img>
-<img src="https://img.shields.io/badge/Version-2.6.14-blue"></img>
+<img src="https://img.shields.io/badge/Version(INSCameraSDK)-2.6.28-blue"></img>
+<img src="https://img.shields.io/badge/Version(INSCoreMedia)-1.25.5-blue"></img>
 [![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![OSC compatible](https://img.shields.io/badge/OSC-compatible-brightgreen)](ttps://developers.google.com/streetview/open-spherical-camera/reference)
 
@@ -31,6 +32,7 @@ You can learn how to control the insta360 camera in the following section
 	- [EXIF & XMP](#EXIF&XMP)
 - [Playback](#Playback)
 - [Internal parameters](#Internal_parameters)
+- [OSC](#OSC)
 
 ## <a name="Integration" />Integration</a>
 
@@ -39,16 +41,18 @@ You can learn how to control the insta360 camera in the following section
 Carthage is a decentralized dependency manager that builds your dependencies and provides you with binary frameworks. To integrate INSCameraSDK & INSCoreMedia into your Xcode project using Carthage, specify it in your Cartfile:
 
 ```ogdl
-binary "#By applying for authorization from Insta360#" == 1.25.5
-binary "#By applying for authorization from Insta360#" == 2.6.14
+binary "#INSCoreMedia:By applying for authorization from Insta360#" == 1.25.5
+binary "#INSCameraSDK-osc:By applying for authorization from Insta360#" == 2.6.28
 ```
 
 ### <a name="Setup" />Setup</a>
 
-1. embed the INSCameraSDK and INSCoreMedia frameworks to your project target.
+1. Embed the INSCameraSDK and INSCoreMedia frameworks to your project target.
 <div align=center><img src="./images/embedframework.png"/></div>
 
-2. add an item in the Info.plist. Key is *Supported external accessory protocols*, value is an Array with following items `com.insta360.camera`(Nano), `com.insta360.onecontrol`(ONE), `com.insta360.onexcontrol`(ONE X), `com.insta360.nanoscontrol`(Nano S) and `com.insta360.onercontrol`(ONE R)
+2. If you need to connect the camera through via wired, you should add the following item into Info.plist. Otherwise, skip the following steps.
+
+- Key is *Supported external accessory protocols*, value is an Array with following items `com.insta360.camera`(Nano), `com.insta360.onecontrol`(ONE), `com.insta360.onexcontrol`(ONE X), `com.insta360.nanoscontrol`(Nano S) and `com.insta360.onercontrol`(ONE R)
 <div align=center><img src="./images/infoplist.png"/></div>
 
 ## <a name="Connection" />Connection</a>
@@ -64,10 +68,6 @@ extern NSURL *INSHTTPURLForResourceURI(NSString *uri);
 /// convert local http url to (photo or video) resource uri
 extern NSString *INSResourceURIFromHTTPURL(NSURL *url);
 ```
-
-### <a name="OSC" />OSC</a>
-
-The camera already supports the [`/osc/info`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/info) and [`/osc/state`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/state) commands. You can use these commands to get basic information about the camera and the features it supports.
 
 ### <a name="INS_Protocol" />SCMP(Spherical Camera Messaging Protocol)</a>
 
@@ -100,60 +100,6 @@ When you connect your camera via wifi, you need to send heartbeat information to
 ```
 
 ## <a name="Commands" />Commands</a>
-
-### <a name="Commands_OSC" />OSC</a>
-
-Execute commands via Open Sepherial Camera API[`/osc/commands/execute`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/commands/execute)
-
-You need to poll yourself to call [`/osc/commands/status`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/commands/status) to get the execution status of the camera on the current command. The polling cycle can be adjusted according to specific conditions. Here is a sample code shows how to execute a `camera.takePicture` command.
-
-```Objective-C
-#import <Foundation/Foundation.h>
-
-NSDictionary *headers = @{ @"Content-Type": @"application/json",
-                           @"X-XSRF-Protected": @"1",
-                           @"Accept": @"application/json" };
-NSDictionary *parameters = @{ @"name": @"camera.takePicture" };
-
-NSData *postData = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:nil];
-
-NSURL *url = [NSURL URLWithString:@"#CameraHost#/commands/execute"];
-NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url
-                                                       cachePolicy:NSURLRequestUseProtocolCachePolicy
-                                                   timeoutInterval:10.0];
-[request setHTTPMethod:@"POST"];
-[request setAllHTTPHeaderFields:headers];
-[request setHTTPBody:postData];
-
-NSURLSession *session = [NSURLSession sharedSession];
-[[session dataTaskWithRequest:request
-            completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-    if (error) {
-        NSLog(@"%@", error);
-    } else {
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *) response;
-        NSLog(@"%@", httpResponse);
-    }
-}] resume];
-```
-
-#### <a name="OSC_Options" />Options</a>
-
-* You can use [`camera.setOptions`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/setoptions) to set options.
-* You can use [`camera.getOptions`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/getoptions) to get options.
-* You can know the relevant parameters supported by the camera from [Open Spherical Camera API options](https://developers.google.com/streetview/open-spherical-camera/reference/options).
-
-#### <a name="OSC_Take_picture_Record" />Take picture & Record</a>
-
-* You can use [`camera.takePicture`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/takepicture) to take picture.
-* You can use [`camera.startCapture`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/startcapture) to start record.
-* You can use [`camera.stopCapture `](https://developers.google.com/streetview/open-spherical-camera/reference/camera/stopcapture) to stop record.
-
-#### <a name="OSC_List_files" />List files</a>
-
-You can use [`camera.listFiles`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/listfiles) to get the files list.
-
-### <a name="Commands_INS_Protocol" />SCMP(Spherical Camera Messaging Protocol)</a>
 
 You can learn all the commands supported by the SDK from `INSCameraCommands.h`, and `INSCameraCommandOptions.h` shows the structure needed by all commands. All options that you can get from camera are list in `INSCameraOptionsType`.
 
@@ -238,6 +184,26 @@ options.generateManually = YES;
 }];
 ```
 
+#### <a name="Video_Caputure" />Video Capture</a>
+
+Call `startCaptureWithOptions:completion` to start recording, and call `stopCaptureWithOptions:completion` to stop the recording.
+
+```Objective-C
+// start capture
+INSCaptureOptions *options = [[INSCaptureOptions alloc] init];
+[[INSCameraManager sharedManager].commandManager startCaptureWithOptions:options completion:^(NSError * _Nullable error) {
+    if (error) {
+        NSLog(@"start capture error: %@",error);
+    }
+}];
+
+// stop capture
+INSCaptureOptions *options = [[INSCaptureOptions alloc] init];
+[[INSCameraManager sharedManager].commandManager stopCaptureWithOptions:options completion:^(NSError * _Nullable error, INSCameraVideoInfo * _Nullable videoInfo) {
+    NSLog(@"video url: %@",videoInfo.uri);
+}];
+```
+
 #### <a name="Set_Photography_Options" />Set Photography Options</a>
 
 The INSCameraSDK also provide you the API to change photography options, such as EV, white balance，exposure program, iso and shutter.
@@ -297,7 +263,7 @@ The file list is divided into the following interfaces:
 
 ```
 [[INSCameraManager sharedManager].commandManager 
- fetchVideoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraPhotoInfo *> * _Nullable videoInfoList) {
+ fetchVideoListWithCompletion:^(NSError * _Nullable error, NSArray<INSCameraVideoInfo *> * _Nullable videoInfoList) {
     NSLog(@"files: %@",videoInfoList);
 }];
 ```
@@ -1041,3 +1007,59 @@ if ([parser open]) {
     }
 }
 ```
+
+## <a name="OSC" />OSC</a>
+
+The camera already supports the [`/osc/info`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/info) and [`/osc/state`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/state) commands. You can use these commands to get basic information about the camera and the features it supports.
+
+### <a name="Commands_OSC" />Commands</a>
+
+Execute commands via Open Sepherial Camera API[`/osc/commands/execute`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/commands/execute)
+
+You need to poll yourself to call [`/osc/commands/status`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/commands/status) to get the execution status of the camera on the current command. The polling cycle can be adjusted according to specific conditions. Here is a sample code shows how to execute a `camera.takePicture` command.
+
+```Objective-C
+#import <Foundation/Foundation.h>
+
+NSDictionary *headers = @{ @"Content-Type": @"application/json",
+                           @"X-XSRF-Protected": @"1",
+                           @"Accept": @"application/json" };
+NSDictionary *parameters = @{ @"name": @"camera.takePicture" };
+
+NSData *postData = [NSJSONSerialization dataWithJSONObject:parameters options:0 error:nil];
+
+NSURL *url = [NSURL URLWithString:@"#CameraHost#/commands/execute"];
+NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url
+                                                       cachePolicy:NSURLRequestUseProtocolCachePolicy
+                                                   timeoutInterval:10.0];
+[request setHTTPMethod:@"POST"];
+[request setAllHTTPHeaderFields:headers];
+[request setHTTPBody:postData];
+
+NSURLSession *session = [NSURLSession sharedSession];
+[[session dataTaskWithRequest:request
+            completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+    if (error) {
+        NSLog(@"%@", error);
+    } else {
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *) response;
+        NSLog(@"%@", httpResponse);
+    }
+}] resume];
+```
+
+#### <a name="OSC_Options" />Options</a>
+
+* You can use [`camera.setOptions`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/setoptions) to set options.
+* You can use [`camera.getOptions`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/getoptions) to get options.
+* You can know the relevant parameters supported by the camera from [Open Spherical Camera API options](https://developers.google.com/streetview/open-spherical-camera/reference/options).
+
+#### <a name="OSC_Take_picture_Record" />Take picture & Record</a>
+
+* You can use [`camera.takePicture`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/takepicture) to take picture.
+* You can use [`camera.startCapture`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/startcapture) to start record.
+* You can use [`camera.stopCapture `](https://developers.google.com/streetview/open-spherical-camera/reference/camera/stopcapture) to stop record.
+
+#### <a name="OSC_List_files" />List files</a>
+
+You can use [`camera.listFiles`](https://developers.google.com/streetview/open-spherical-camera/reference/camera/listfiles) to get the files list.

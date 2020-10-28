@@ -98,7 +98,7 @@ What's more, call `[[INSCameraManager sharedManager] shutdown]` when your app wo
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // connet camera via wired
-    [[INSCameraManager sharedManager] setup];
+    [[INSCameraManager usbManager] setup];
     return YES;
 }
 ```

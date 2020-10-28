@@ -127,7 +127,7 @@ You can monitor the connection status of the camera in the following ways:
     case INSCameraStateConnected: {
     	NSLog(@"Connected");
 	if (manager == [INSCameraManager socketManager]) {
-		[self startSendingHeartbeats];
+	    [self startSendingHeartbeats];
         }
 	break;
     }

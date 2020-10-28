@@ -6,9 +6,17 @@
 
 # CameraSDK-iOS
 
-You can learn how to control the insta360 camera in the following section
+You can learn how to control the Insta360 camera in the following section. And the camera supports the following two communication protocols:
 
-- Camera supports the control command of [Open Spherical Camera API level 2](https://developers.google.com/streetview/open-spherical-camera/reference), except preview stream. Familiarity with [`Open Spherical Camera API - Commands`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/commands) official documentation is a prerequisite for OSC development.
+1. SCMP (Spherical Camera Messaging Protocol)
+	
+	All the native interfaces are based on the SCMP(Spherical Camera Messaging Protocol) developed by Insta360.
+
+2. OSC (Open Spherical Camera)
+	
+	Camera supports the control command of [Open Spherical Camera API level 2](https://developers.google.com/streetview/open-spherical-camera/reference), except preview stream. Familiarity with [`Open Spherical Camera API - Commands`](https://developers.google.cn/streetview/open-spherical-camera/guides/osc/commands) official documentation is a prerequisite for OSC development.
+	
+We suggest that you use the same protocol to control the camera in the whole development process. If you want to control the camera through the OSC protocol, please check the [OSC](#OSC) section of the document directly.
 
 ## Table of Contents
 
@@ -16,7 +24,13 @@ You can learn how to control the insta360 camera in the following section
 	- [Carthage](#Carthage)
 	- [Setup](#Setup)
 - [Connection](#Connection)
+	- [Status](#Status)
+	- [Heartbeat](#Heartbeat)
 - [Commands](#Commands)
+	- [Take picture](#Take_Picture)
+	- [Video caputure](#Video_Caputure)
+	- [Photography options](#Set_Photography_Options)
+	- [List files](#SCMP_List_files)
 - [Working with audio & video stream](#Audio_Video_Stream)
 	- [Control center](#Control_center)
 	- [Preview](#Preview)
@@ -71,12 +85,19 @@ extern NSString *INSResourceURIFromHTTPURL(NSURL *url);
 
 ### <a name="INS_Protocol" />SCMP(Spherical Camera Messaging Protocol)</a>
 
-Add the following code in your AppDelegate, or somewhere your app is ready to work with Insta360 cameras via the Lightning interface. And if you're connected to the camera via WiFi, you should add `[[INSCameraManager socketManager] setup]` once where you need to start the socket connection. The connection is asynchronous. You need to monitor the connection status and operate the camera when the connection status is `INSCameraStateConnected`. What's more, call `[[INSCameraManager sharedManager] shutdown]` when your app won't listen on Insta360 cameras any more. [see connection monitoring](#Status)
+Add the following code in your AppDelegate, or somewhere your app is ready to work with Insta360 cameras via the wired (connect the camera through the lighting interface). 
+
+And if you connect camera via WiFi, you should add `[[INSCameraManager socketManager] setup]` once where you need to start the socket connection. 
+
+The connection is asynchronous. You need to monitor the connection status and operate the camera when the connection status is `INSCameraStateConnected`. 
+
+What's more, call `[[INSCameraManager sharedManager] shutdown]` when your app won't listen on Insta360 cameras any more. [see connection monitoring](#Status)
 
 ```Objective-C
 #import <INSCameraSDK/INSCameraSDK.h>
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    // connet camera via wired
     [[INSCameraManager sharedManager] setup];
     return YES;
 }
@@ -90,9 +111,44 @@ You can monitor the connection status of the camera in the following ways:
 
 - add KVO on `[INSCameraManager SharedManager].cameraState`, once the cameraState changes to INSCameraStateConnected, your app is able to send commands to the camera.
 
+```Objective-C
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    if (![object isKindOfClass:[INSCameraManager class]]) {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+        return ;
+    }
+    INSCameraManager *manager = (INSCameraManager *)object;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        INSCameraState state = [change[NSKeyValueChangeNewKey] unsignedIntegerValue];
+        switch (state) {
+            case INSCameraStateFound: {
+				   NSLog(@"Found");
+                break;
+            }
+            case INSCameraStateConnected: {
+				   NSLog(@"Connected");
+                if (manager == [INSCameraManager socketManager]) {
+                    [self startSendingHeartbeats];
+                }
+                break;
+            }
+            case INSCameraStateConnectFailed: {
+                NSLog(@"Failed");
+                [self stopSendingHeartbeats];
+                break;
+            }
+            default:
+                NSLog(@"Not Connect");
+                [self stopSendingHeartbeats];
+                break;
+        }
+    });
+}
+```
+
 #### <a name="Heartbeat" />Heartbeat</a>
 
-When you connect your camera via wifi, you need to send heartbeat information to the camera at 2 Hz.
+When you connect your camera via wifi, you need to send heartbeat information to the camera at 2 Hz (every 500ms).
 
 ```Objective-C
 // Objective-C

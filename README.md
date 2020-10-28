@@ -10,7 +10,7 @@ You can learn how to control the Insta360 camera in the following section. And t
 
 1. SCMP (Spherical Camera Messaging Protocol)
 	
-	All the native interfaces are based on the SCMP(Spherical Camera Messaging Protocol) developed by Insta360.
+	All the native interfaces in the framework are based on the SCMP(Spherical Camera Messaging Protocol) developed by Insta360.
 
 2. OSC (Open Spherical Camera)
 	

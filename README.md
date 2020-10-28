@@ -118,31 +118,29 @@ You can monitor the connection status of the camera in the following ways:
         return ;
     }
     INSCameraManager *manager = (INSCameraManager *)object;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        INSCameraState state = [change[NSKeyValueChangeNewKey] unsignedIntegerValue];
-        switch (state) {
-            case INSCameraStateFound: {
-				   NSLog(@"Found");
-                break;
-            }
-            case INSCameraStateConnected: {
-				   NSLog(@"Connected");
-                if (manager == [INSCameraManager socketManager]) {
-                    [self startSendingHeartbeats];
-                }
-                break;
-            }
-            case INSCameraStateConnectFailed: {
-                NSLog(@"Failed");
-                [self stopSendingHeartbeats];
-                break;
-            }
-            default:
-                NSLog(@"Not Connect");
-                [self stopSendingHeartbeats];
-                break;
+    INSCameraState state = [change[NSKeyValueChangeNewKey] unsignedIntegerValue];
+    switch (state) {
+    case INSCameraStateFound: {
+    	NSLog(@"Found");
+    	break;
+    }
+    case INSCameraStateConnected: {
+    	NSLog(@"Connected");
+	if (manager == [INSCameraManager socketManager]) {
+		[self startSendingHeartbeats];
         }
-    });
+	break;
+    }
+    case INSCameraStateConnectFailed: {
+    	NSLog(@"Failed");
+	[self stopSendingHeartbeats];
+	break;
+    }
+    default:
+    	NSLog(@"Not Connect");
+	[self stopSendingHeartbeats];
+	break;
+    }
 }
 ```
 

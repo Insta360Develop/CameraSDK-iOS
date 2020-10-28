@@ -50,7 +50,7 @@ binary "#INSCameraSDK-osc:By applying for authorization from Insta360#" == 2.6.2
 1. Embed the INSCameraSDK and INSCoreMedia frameworks to your project target.
 <div align=center><img src="./images/embedframework.png"/></div>
 
-2. If you need to connect the camera through via wired, you should add the following item into Info.plist. Otherwise, skip the following steps.
+2. If you need to connect the camera via wired, you should add the following item into Info.plist. Otherwise, skip the following steps.
 
 - Key is *Supported external accessory protocols*, value is an Array with following items `com.insta360.camera`(Nano), `com.insta360.onecontrol`(ONE), `com.insta360.onexcontrol`(ONE X), `com.insta360.nanoscontrol`(Nano S) and `com.insta360.onercontrol`(ONE R)
 <div align=center><img src="./images/infoplist.png"/></div>
@@ -206,7 +206,7 @@ INSCaptureOptions *options = [[INSCaptureOptions alloc] init];
 
 #### <a name="Set_Photography_Options" />Set Photography Options</a>
 
-The INSCameraSDK also provide you the API to change photography options, such as EV, white balance，exposure program, iso and shutter.
+The INSCameraSDK also provide you the API to change photography options, such as EV, white balance, exposure program, iso and shutter.
 
 As the shutter speed of still and video may be different, set stillExposure to manual program will not effect the live stream, so you need to call `setPhotographyOptions` again to set the liveStream's videoExposure. Note that the shutter speed of videoExposure should not be larger than 1.0/framerate.
 

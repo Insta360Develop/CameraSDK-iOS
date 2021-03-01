@@ -825,9 +825,9 @@ The URLs that is passed into `INSHDROptions` is ordered array, and the array ord
 
 ```Objective-C
 NSArray *urls = @[
-    [NSURL URLWithString:@"0ev"],
-    [NSURL URLWithString:@"-ev"],
-    [NSURL URLWithString:@"+ev"],
+    INSHTTPURLForResourceURI(@"0ev"),
+    INSHTTPURLForResourceURI(@"-ev"),
+    INSHTTPURLForResourceURI(@"+ev"),
 ];
 
 INSHDROptions *options = [[INSHDROptions alloc] init];

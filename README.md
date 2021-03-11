@@ -1,6 +1,6 @@
 <img src="https://img.shields.io/badge/Platform-iOS(10.0, *)-blue"></img>
-<img src="https://img.shields.io/badge/Version(INSCameraSDK)-2.7.5-blue"></img>
-<img src="https://img.shields.io/badge/Version(INSCoreMedia)-1.25.7-blue"></img>
+<img src="https://img.shields.io/badge/Version(INSCameraSDK)-2.7.15-blue"></img>
+<img src="https://img.shields.io/badge/Version(INSCoreMedia)-1.25.9-blue"></img>
 [![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![OSC compatible](https://img.shields.io/badge/OSC-compatible-brightgreen)](ttps://developers.google.com/streetview/open-spherical-camera/reference)
 
@@ -55,8 +55,8 @@ We suggest that you use the same protocol to control the camera in the whole dev
 Carthage is a decentralized dependency manager that builds your dependencies and provides you with binary frameworks. To integrate INSCameraSDK & INSCoreMedia into your Xcode project using Carthage, specify it in your Cartfile:
 
 ```ogdl
-binary "#INSCoreMedia:By applying for authorization from Insta360#" == 1.25.7
-binary "#INSCameraSDK-osc:By applying for authorization from Insta360#" == 2.7.5
+binary "#INSCoreMedia:By applying for authorization from Insta360#" == 1.25.9
+binary "#INSCameraSDK-osc:By applying for authorization from Insta360#" == 2.7.15
 ```
 
 ### <a name="Setup" />Setup</a>

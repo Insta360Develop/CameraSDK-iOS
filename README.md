@@ -1,6 +1,7 @@
 <img src="https://img.shields.io/badge/Platform-iOS(10.0, *)-blue"></img>
-<img src="https://img.shields.io/badge/Version(INSCameraSDK)-2.8.44-blue"></img>
+<img src="https://img.shields.io/badge/Version(INSCameraSDK)-2.8.45-blue"></img>
 <img src="https://img.shields.io/badge/Version(INSCoreMedia)-1.25.24-blue"></img>
+![XCFramework Compatible](https://img.shields.io/badge/XCFramework-compatible-4BC51D.svg?style=flat)
 [![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![OSC compatible](https://img.shields.io/badge/OSC-compatible-brightgreen)](ttps://developers.google.com/streetview/open-spherical-camera/reference)
 
@@ -30,11 +31,14 @@ We suggest that you use the same protocol to control the camera in the whole dev
 	- [Take picture](#Take_Picture)
 	- [Video caputure](#Video_Caputure)
 	- [Photography options](#Set_Photography_Options)
+	- [Multi photography options](#Multi_PhotographyOptions)
+	- [Timelapse options](#Timelapse_Options)
 	- [List files](#SCMP_List_files)
 - [Working with audio & video stream](#Audio_Video_Stream)
 	- [Control center](#Control_center)
 	- [Preview](#Preview)
 	- [For further preview config](#Further_Config)
+	- [Switching capture lens](#Switch_Lens)
 	- [Stitched outputs](#Stitched_outputs)
 	- [RTMP live stream](#RTMP_Live_Stream)
 - [Media](#Media)
@@ -56,7 +60,7 @@ Carthage is a decentralized dependency manager that builds your dependencies and
 
 ```ogdl
 binary "#INSCoreMedia:By applying for authorization from Insta360#" == 1.25.24
-binary "#INSCameraSDK-osc:By applying for authorization from Insta360#" == 2.8.44
+binary "#INSCameraSDK-osc:By applying for authorization from Insta360#" == 2.8.45
 ```
 
 ### <a name="Setup" />Setup</a>
@@ -297,6 +301,52 @@ NSArray *types = @[@(INSPhotographyOptionsTypeStillExposureOptions)];
  setPhotographyOptions:options forFunctionMode:INSCameraFunctionModeNormal
  types:types completion:^(NSError * _Nullable error, NSArray<NSNumber *> * _Nullable successTypes) {
     NSLog(@"Set Photogtaphy Options %@",error);
+}];
+```
+
+#### <a name="Multi_PhotographyOptions" />Multi Photography Options</a>
+
+When the capture mode is switched to `Wide angle`, you need to use `INSMultiPhotographyOptions` to modify the following capture parameters.
+
+```Objective-C
+typedef NS_ENUM(uint16_t, INSMultiPhotographyOptionsType) {
+	 /// Default
+    INSMultiPhotographyOptionsTypeUnknown = 0,
+    
+    /// Capture resolution, readwrite. @available ONE X2
+    INSMultiPhotographyOptionsTypeResolution = 1,
+    
+    /// Indicates whether the video is internal flowstate, readwrite. @available ONE X2
+    INSMultiPhotographyOptionsTypeInternalFlowstate = 2,
+    
+    /// Indicates whether the captured file is a portrait file or a landscape file, readwrite. @available ONE X2
+    INSMultiPhotographyOptionsTypeDimensionType = 3,
+    
+    /// Fov type, readwrite. @available ONE X2
+    INSMultiPhotographyOptionsTypeFovType = 4,
+};
+```
+
+#### <a name="Timelapse_Options" />Timelapse Options</a>
+
+Call `setTimelapseOptions:forMode:completion:` to config the timelapse options, and call `startCaptureTimelapseWithOptions:completion:` to start capture timelapse video.
+
+P.s. The `timelapseOptions` in `INSStartCaptureTimelapseOptions` only be used to calculate timeout, will not be set to camera. If you want to change the config of timelapse video, you should call `setTimelapseOptions:forMode:completion:` first.
+
+```Objective-C
+INSTimelapseOptions *options = [[INSTimelapseOptions alloc] init];
+options.duration = #total record duration that you expect#;
+options.lapseTime = #the time interval for capturing each picture#;
+
+[[INSCameraManager sharedManager].commandManager
+ setTimelapseOptions:options
+ forMode:weakSelf.mode
+ completion:^(NSError * _Nullable error) {
+    if (error) {
+        NSLog(@"error: %@",error.localizedDescription);
+    } else {
+        // success
+    }
 }];
 ```
 
@@ -568,6 +618,126 @@ Audio and video stream is based on SCMP(Spherical Camera Messaging Protocol). If
  *  The encoding format of video real-time stream, default is INSVideoEncodeH264.
  */
 @property (nonatomic) INSVideoEncode videoStreamEncode;
+```
+
+### <a name="Switch_Lens" />Switching capture lens</a>
+
+The following camera can switch capture lens:
+
+- Insta360 ONE X2
+
+This camera can capture three types of files as following:
+
+- Panorama
+- Insta Pano (only for photos)
+- Wide angle
+
+The following methods must be called in the order of the sample code.
+
+```Objective-C
+// Before that, you need to call 'startRunningWithCompletion:' through 'INSCameraMediaSession' to start the preview stream
+
+NSArray *modes = @[@"Panorama", @"Insta Pano", @"Wide angle"];
+NSString *currentMode = @"pano";
+
+if ([currentMode isEqualToString:@"Panorama"]) {
+    [self.mediaSession stopRunningWithCompletion:^(NSError * _Nullable error) {
+        if (error != nil) {
+            NSLog(@"stop media session with err: %@", error.description);
+            return;
+        }
+        
+        INSCameraOptions *options = [[INSCameraOptions alloc] init];
+        options.focusSensor = INSSensorDeviceAll;
+        options.expectOutputType = INSCameraExpectOutputTypeDefault;
+        
+        NSArray *types = @[@(INSCameraOptionsTypeFocusSensor), @(INSCameraOptionsTypeExpectOutputType)];
+        
+        [[INSCameraManager sharedManager].commandManager setOptions:options forTypes:types completion:^(NSError * _Nullable error, NSArray<NSNumber *> * _Nullable successTypes) {
+            if (error != nil) {
+                [self showAlertWith:@"" message:error.localizedDescription];
+                return;
+            }
+            
+            [[INSCameraManager sharedManager].commandManager setActiveSensorWithDevice:INSSensorDeviceAll completion:^(NSError * _Nullable error, NSString * _Nullable mediaOffset) {
+                if (error) {
+                    [self showAlertWith:@"Failed" message:error.description];
+                } else {
+                    NSString *message = [NSString stringWithFormat:@"current offset: %@", mediaOffset];
+                    [self showAlertWith:@"Success" message:message];
+                    [self.previewPlayer.renderView clearCurrentPlayImage];
+                    [self runMediaSession];
+                }
+            }];
+        }];
+        
+    }];
+} else if ([currentMode isEqualToString:@"Insta Pano"]) {
+    [self.mediaSession stopRunningWithCompletion:^(NSError * _Nullable error) {
+        if (error != nil) {
+            NSLog(@"stop media session with err: %@", error.description);
+            return;
+        }
+        
+        INSCameraOptions *options = [[INSCameraOptions alloc] init];
+        options.focusSensor = INSSensorDeviceRear;
+        options.expectOutputType = INSCameraExpectOutputTypeInstaPano;
+        
+        NSArray *types = @[@(INSCameraOptionsTypeFocusSensor), @(INSCameraOptionsTypeExpectOutputType)];
+        
+        [[INSCameraManager sharedManager].commandManager setOptions:options forTypes:types completion:^(NSError * _Nullable error, NSArray<NSNumber *> * _Nullable successTypes) {
+            if (error != nil) {
+                [self showAlertWith:@"" message:error.localizedDescription];
+                return;
+            }
+            
+            [[INSCameraManager sharedManager].commandManager setActiveSensorWithDevice:INSSensorDeviceAll completion:^(NSError * _Nullable error, NSString * _Nullable mediaOffset) {
+                if (error) {
+                    [self showAlertWith:@"Failed" message:error.description];
+                } else {
+                    NSString *message = [NSString stringWithFormat:@"current offset: %@", mediaOffset];
+                    [self showAlertWith:@"Success" message:message];
+                    [self.previewPlayer.renderView clearCurrentPlayImage];
+                    [self runMediaSession];
+                }
+            }];
+        }];
+        
+    }];
+    
+} else if ([currentMode isEqualToString:@"Wide angle"]) {
+    [self.mediaSession stopRunningWithCompletion:^(NSError * _Nullable error) {
+        if (error != nil) {
+            NSLog(@"stop media session with err: %@", error.description);
+            return;
+        }
+        
+        INSCameraOptions *options = [[INSCameraOptions alloc] init];
+        options.focusSensor = INSSensorDeviceRear;
+        options.expectOutputType = INSCameraExpectOutputTypeDefault;
+        
+        NSArray *types = @[@(INSCameraOptionsTypeFocusSensor), @(INSCameraOptionsTypeExpectOutputType)];
+        
+        [[INSCameraManager sharedManager].commandManager setOptions:options forTypes:types completion:^(NSError * _Nullable error, NSArray<NSNumber *> * _Nullable successTypes) {
+            if (error != nil) {
+                [self showAlertWith:@"" message:error.localizedDescription];
+                return;
+            }
+            
+            [[INSCameraManager sharedManager].commandManager setActiveSensorWithDevice:INSSensorDeviceRear completion:^(NSError * _Nullable error, NSString * _Nullable mediaOffset) {
+                if (error) {
+                    [self showAlertWith:@"Failed" message:error.description];
+                } else {
+                    NSString *message = [NSString stringWithFormat:@"current offset: %@", mediaOffset];
+                    [self showAlertWith:@"Success" message:message];
+                    [self.previewPlayer.renderView clearCurrentPlayImage];
+                    [self runMediaSession];
+                }
+            }];
+        }];
+        
+    }];
+}
 ```
 
 ### <a name="Stitched_outputs" />Stitched outputs </a>

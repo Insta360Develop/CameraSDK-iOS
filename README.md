@@ -1,9 +1,3 @@
-<img src="https://img.shields.io/badge/Platform-iOS(10.0, *)-blue"></img>
-<img src="https://img.shields.io/badge/Version(INSCameraSDK)-2.8.46-blue"></img>
-<img src="https://img.shields.io/badge/Version(INSCoreMedia)-1.25.26-blue"></img>
-![XCFramework Compatible](https://img.shields.io/badge/XCFramework-compatible-4BC51D.svg?style=flat)
-[![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-[![OSC compatible](https://img.shields.io/badge/OSC-compatible-brightgreen)](ttps://developers.google.com/streetview/open-spherical-camera/reference)
 
 # CameraSDK-iOS
 
@@ -236,13 +230,34 @@ INSTakePictureOptions *options = [[INSTakePictureOptions alloc] init];
 options.mode = INSPhotoModeAeb;
 options.AEBEVBias = @[@(0), @(-2), @(-1), @(1), @(2)];
 options.generateManually = YES;
-
+/// x4
+options.inerProccess = true;
+/// other
+options.inerProccess = false;
 [[INSCameraManager sharedManager].commandManager takePictureWithOptions:options completion:^(NSError * _Nullable error, INSCameraPhotoInfo * _Nullable photoInfo) {
     NSLog(@"take hdr picture: %@, %@",photoInfo.uri,photoInfo.hdrUris);
 }];
 ```
 
 #### <a name="Video_Caputure" />Video Capture</a>
+
+Call `setOptions:completion` to change shotting mode.
+
+```Objective-C
+/// change to photo mode
+INSCameraOptions *options = [[INSCameraOptions alloc] init];
+options.photoSubMode = self.INSPhotoSubModeSingle;
+[[INSCameraManager sharedManager].commandManager setOptions:options forTypes:@[@(INSCameraOptionsTypePhotoSubMode)] completion:^(NSError * _Nullable error, NSArray<NSNumber *> * _Nullable successTypes) {
+                
+}];
+/// change to vide mode
+INSCameraOptions *options = [[INSCameraOptions alloc] init];
+options.videoSubMode = self.INSVideoSubModeNormal;
+[[INSCameraManager sharedManager].commandManager setOptions:options forTypes:@[@(INSCameraOptionsTypeVideoSubMode)] completion:^(NSError * _Nullable error, NSArray<NSNumber *> * _Nullable successTypes) {
+                
+}];
+
+- When shooting x4, you need to switch to the corresponding shooting mode first.
 
 Call `startCaptureWithOptions:completion` to start recording, and call `stopCaptureWithOptions:completion` to stop the recording.
 
@@ -269,7 +284,7 @@ The INSCameraSDK also provide you the API to change photography options, such as
 As the shutter speed of still and video may be different, set stillExposure to manual program will not effect the live stream, so you need to call `setPhotographyOptions` again to set the liveStream's videoExposure. Note that the shutter speed of videoExposure should not be larger than 1.0/framerate.
 
 ```Objective-C
-// live stream
+// live stream, x4 does not require setup.
 INSCameraExposureOptions *videoExposureOptions = [[INSCameraExposureOptions alloc] init];
 videoExposureOptions.program = INSCameraExposureProgramManual;
 videoExposureOptions.iso = 200;
@@ -1195,7 +1210,9 @@ Using `INSRenderView` to display the pano file, and using `INSPreviewer2` to pla
                    totalSrcDurationMs:durationMs
                            timeScales:@[timeScale]
                              hasAudio:YES
-                        mediaFileSize:mediaFileSize];
+                        mediaFileSize:mediaFileSize
+		      videoTrackCount:parser.extraInfo.metadata.videoTrackCount
+	       reverseVideoTrackOrder:parser.extraInfo.metadata.reverseVideoTrackOrder];
     [_previewer setVideoSource:@[videoClip] bgmSource:nil videoSilent:NO];
     
     // you can set the playback begin time. default is 0.

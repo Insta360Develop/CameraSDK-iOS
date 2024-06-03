@@ -48,13 +48,13 @@ We suggest that you use the same protocol to control the camera in the whole dev
 
 ## <a name="Integration" />Integration</a>
 
-### <a name="Carthage" />Carthage</a>
+- Download the sdk from the official website
 
-Carthage is a decentralized dependency manager that builds your dependencies and provides you with binary frameworks. To integrate INSCameraSDK & INSCoreMedia into your Xcode project using Carthage, specify it in your Cartfile:
+ - https://www.insta360.com/cn/sdk/home
 
 ```ogdl
-binary "#INSCoreMedia:By applying for authorization from Insta360#" == 1.25.26
-binary "#INSCameraSDK-osc:By applying for authorization from Insta360#" == 2.8.46
+binary "#INSCoreMedia:By applying for authorization from Insta360#" == 1.25.30
+binary "#INSCameraSDK-osc:By applying for authorization from Insta360#" == 3.0.4
 ```
 
 ### <a name="Setup" />Setup</a>

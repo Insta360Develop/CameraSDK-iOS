@@ -1,4 +1,3 @@
-
 # CameraSDK-iOS
 
 You can learn how to control the Insta360 camera in the following section. And the camera supports the following two communication protocols:
@@ -54,7 +53,7 @@ We suggest that you use the same protocol to control the camera in the whole dev
 
 ```ogdl
 binary "#INSCoreMedia:By applying for authorization from Insta360#" == 1.25.30
-binary "#INSCameraSDK-osc:By applying for authorization from Insta360#" == 3.0.4
+binary "#INSCameraSDK-osc:By applying for authorization from Insta360#" == 3.0.5
 ```
 
 ### <a name="Setup" />Setup</a>
@@ -313,11 +312,32 @@ options.stillExposure = stillExposureOptions;
 
 NSArray *types = @[@(INSPhotographyOptionsTypeStillExposureOptions)];
 [[INSCameraManager sharedManager].commandManager
- setPhotographyOptions:options forFunctionMode:INSCameraFunctionModeNormal
+ setPhotographyOptions:options forFunctionMode:INSCameraFunctionModeNormalImage
  types:types completion:^(NSError * _Nullable error, NSArray<NSNumber *> * _Nullable successTypes) {
     NSLog(@"Set Photogtaphy Options %@",error);
 }];
 ```
+
+```Objective-C
+// On device processing pureshot only support on x4, default On once pureshot is set.
+INSPhotographyOptions *options = [[INSPhotographyOptions alloc] init];
+options.rawCaptureType = INSCameraRawCaptureTypePureshot;
+NSArray *types = @[@(INSCameraRawCaptureType)];
+[[INSCameraManager sharedManager].commandManager
+ setPhotographyOptions:options forFunctionMode:INSCameraFunctionModeNormalImage
+ types:types completion:^(NSError * _Nullable error, NSArray<NSNumber *> * _Nullable successTypes) {
+    NSLog(@"Set Photogtaphy Options %@",error);
+}];
+```
+
+```Objective-C
+// On device stitching only support on x4.
+INSCameraOptions *options = [[INSCameraOptions alloc] init];
+options.enableInternalSplicing = true;
+NSArray *types = @[@(INSCameraOptionsTypeInternalSplicing)];
+[[INSCameraManager sharedManager].commandManager setOptions:options forTypes:types completion:^(NSError * _Nullable error, NSArray<NSNumber *> * _Nullable successTypes) {
+   
+}];
 
 #### <a name="Multi_PhotographyOptions" />Multi Photography Options</a>
 

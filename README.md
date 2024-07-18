@@ -1,4 +1,4 @@
-# CameraSDK-iOS
+![image](https://github.com/user-attachments/assets/78b861d5-41a5-4231-948c-1cd776a13f7a)# CameraSDK-iOS
 
 You can learn how to control the Insta360 camera in the following section. And the camera supports the following two communication protocols:
 
@@ -67,6 +67,24 @@ binary "#INSCameraSDK-osc:By applying for authorization from Insta360#" == 3.0.5
 <div align=center><img src="./images/infoplist.png"/></div>
 
 ## <a name="Connection" />Connection</a>
+
+You can get the wifi name and password through Bluetooth's INSCamerasdSDK，You can get the wifi name and password through the Bluetooth INSCamerasdSDK, you can refer to the code in sample
+```Swift
+let commandManager = self?.bluetoothManager.command(by: peripheral)
+let optionTypes = [
+                    NSNumber(value: INSCameraOptionsType.serialNumber.rawValue),
+                    NSNumber(value: INSCameraOptionsType.wifiInfo.rawValue),
+                    NSNumber(value: INSCameraOptionsType.wifiChannelList.rawValue),
+                    NSNumber(value: INSCameraOptionsType.cameraType.rawValue)
+                ]
+commandManager?.getOptionsWithTypes(optionTypes, completion: { (err, options, successTypes) in
+  	if let err = err {
+		 self?.showAlert("\((err as NSError).code)", err.localizedDescription)
+	} else {
+		self?.showAlert(options?.wifiInfo?.ssid ?? "", options?.wifiInfo?.password ?? "")
+	}
+})
+```
 
 If you connect camera via wifi, you need to set the host to `http://192.168.42.1`. and if you connect camera via the Lightning interface, you need to changed the host to `http://localhost:9099`.
 

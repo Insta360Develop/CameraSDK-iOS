@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/78b861d5-41a5-4231-948c-1cd776a13f7a)# CameraSDK-iOS
+# CameraSDK-iOS
 
 You can learn how to control the Insta360 camera in the following section. And the camera supports the following two communication protocols:
 

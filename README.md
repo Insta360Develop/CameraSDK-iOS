@@ -70,6 +70,20 @@ binary "#INSCameraSDK-osc:By applying for authorization from Insta360#" == 3.0.5
 
 You can get the wifi name and password through Bluetooth's INSCamerasdSDK，You can get the wifi name and password through the Bluetooth INSCamerasdSDK, you can refer to the code in sample
 ```Swift
+/// Global Bluetooth management object,
+let bluetoothManager = INSBluetoothManager()
+/// Currently connected device
+var connectedDevice: INSBluetoothDevice?
+
+/// Scanning camera
+- (void)scanCamerasWithHandler:(void (^)(INSBluetoothDevice * _Nonnull device,
+                                         NSNumber * _Nonnull RSSI,
+                                         NSDictionary<NSString *, id> * _Nonnull advertisementData))handler;
+/// connecting camera
+- (id)connectDevice:(INSBluetoothDevice *)device
+         completion:(void(^)(NSError  * _Nullable error))completion;
+
+guard let peripheral = self?.connectedDevice else { return }
 let commandManager = self?.bluetoothManager.command(by: peripheral)
 let optionTypes = [
                     NSNumber(value: INSCameraOptionsType.serialNumber.rawValue),

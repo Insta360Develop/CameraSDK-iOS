@@ -68,7 +68,7 @@ binary "#INSCameraSDK-osc:By applying for authorization from Insta360#" == 3.0.5
 
 ## <a name="Connection" />Connection</a>
 
-You can get the wifi name and password through Bluetooth's INSCamerasdSDK，You can get the wifi name and password through the Bluetooth INSCamerasdSDK, you can refer to the code in sample
+You can get the wifi name and password through Bluetooth's INSCamerasdSDK, And you can refer to the code in sample
 ```Swift
 /// Global Bluetooth management object,
 let bluetoothManager = INSBluetoothManager()

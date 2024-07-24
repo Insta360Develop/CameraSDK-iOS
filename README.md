@@ -75,14 +75,28 @@ let bluetoothManager = INSBluetoothManager()
 /// Currently connected device
 var connectedDevice: INSBluetoothDevice?
 
-/// Scanning camera
+/// Scan the camera you want to connect
 - (void)scanCamerasWithHandler:(void (^)(INSBluetoothDevice * _Nonnull device,
                                          NSNumber * _Nonnull RSSI,
                                          NSDictionary<NSString *, id> * _Nonnull advertisementData))handler;
-/// connecting camera
+/// Connect the scanned camera
 - (id)connectDevice:(INSBluetoothDevice *)device
          completion:(void(^)(NSError  * _Nullable error))completion;
 
+///sample
+ self?.bluetoothManager.scanCameras(handler: { device, rssi, advertisementData in
+	 if (self?.connectedDevice != nil) {
+		 self?.bluetoothManager.disconnectDevice(self!.connectedDevice!);
+	 }
+	 self?.bluetoothManager.connect(device, completion: { (err) in
+		 print(device.peripheral.identifier)
+		if (err == nil) {
+			 self?.connectedDevice = device
+		}
+	})
+})
+
+///get wifi info
 guard let peripheral = self?.connectedDevice else { return }
 let commandManager = self?.bluetoothManager.command(by: peripheral)
 let optionTypes = [

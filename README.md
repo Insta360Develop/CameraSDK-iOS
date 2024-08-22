@@ -823,9 +823,9 @@ if ([currentMode isEqualToString:@"Panorama"]) {
 
 ### <a name="Stitched_outputs" />Stitched outputs </a>
 
-`INSCameraFlatPanoOutput` instance will produces flat panorama video and camera's audio for you.
+`INSCameraFlatPanoOutput` instance will produce flat panorama video and camera's audio for you.
 
-`INSCameraScreenOutput` instance will produces screen captured video and camera's audio for you.
+`INSCameraScreenOutput` instance will produce screen captured video and camera's audio for you.
 
 ```Objective-C
 INSVideoResolution resolution = INSVideoResolution720x360x30;

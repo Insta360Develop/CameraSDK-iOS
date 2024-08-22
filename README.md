@@ -114,9 +114,9 @@ commandManager?.getOptionsWithTypes(optionTypes, completion: { (err, options, su
 })
 ```
 
-If you connect camera via wifi, you need to set the host to `http://192.168.42.1`. and if you connect camera via the Lightning interface, you need to changed the host to `http://localhost:9099`.
+If you connect camera via wifi, you need to set the host to `http://192.168.42.1`. and if you connect camera via the Lightning interface, you need to change the host to `http://localhost:9099`.
 
-We recommend that you use the following methods to convert of URL and path
+We recommend using the following methods to convert the URL and path
 
 ```Objective-C
 /// convert (photo or video) resource uri to http url via http tunnel and Wi-Fi socket
@@ -128,7 +128,7 @@ extern NSString *INSResourceURIFromHTTPURL(NSURL *url);
 
 ### <a name="INS_Protocol" />SCMP(Spherical Camera Messaging Protocol)</a>
 
-Add the following code in your AppDelegate, or somewhere your app is ready to work with Insta360 cameras via the wired (connect the camera through the lighting interface). 
+Add the following code in your AppDelegate, or somewhere your app is ready to work with Insta360 cameras via the wired (connect the camera through the Lightning interface). 
 
 And if you connect camera via WiFi, you should add `[[INSCameraManager socketManager] setup]` once where you need to start the socket connection. 
 
@@ -286,7 +286,7 @@ options.inerProccess = false;
 
 #### <a name="Video_Caputure" />Video Capture</a>
 
-Call `setOptions:completion` to change shotting mode.
+Call `setOptions:completion` to change shooting mode.
 
 ```Objective-C
 /// change to photo mode
@@ -295,7 +295,7 @@ options.photoSubMode = self.INSPhotoSubModeSingle;
 [[INSCameraManager sharedManager].commandManager setOptions:options forTypes:@[@(INSCameraOptionsTypePhotoSubMode)] completion:^(NSError * _Nullable error, NSArray<NSNumber *> * _Nullable successTypes) {
                 
 }];
-/// change to vide mode
+/// change to video mode
 INSCameraOptions *options = [[INSCameraOptions alloc] init];
 options.videoSubMode = self.INSVideoSubModeNormal;
 [[INSCameraManager sharedManager].commandManager setOptions:options forTypes:@[@(INSCameraOptionsTypeVideoSubMode)] completion:^(NSError * _Nullable error, NSArray<NSNumber *> * _Nullable successTypes) {

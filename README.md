@@ -22,7 +22,7 @@ We suggest that you use the same protocol to control the camera in the whole dev
 	- [Heartbeat](#Heartbeat)
 - [Commands](#Commands)
 	- [Take picture](#Take_Picture)
-	- [Video caputure](#Video_Caputure)
+	- [Video capture](#Video_Caputure)
 	- [Photography options](#Set_Photography_Options)
 	- [Multi photography options](#Multi_PhotographyOptions)
 	- [Timelapse options](#Timelapse_Options)

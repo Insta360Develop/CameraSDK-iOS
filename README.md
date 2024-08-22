@@ -891,7 +891,7 @@ _flatPanoOutput = [[INSCameraFlatPanoOutput alloc] initWithOutputWidth:resolutio
 
 There is a special data segment in the video or photo captured by Insta360 camera, which is called INSExtraInfo. The INSExtraInfo contains the corresponding file's thumbnail, extra metedata, gyroscope data, etc. For more information, please check `INSExtraInfo.h`.
 
-In general, we suggests that you obtain the above information from a file whose file name `(VIN Channel)(Stream Num)` is '00'. For example: `IMG_19700101_000000_00_001.insp`.
+In general, we suggest that you obtain the above information from a file whose file name `(VIN Channel)(Stream Num)` is '00'. For example: `IMG_19700101_000000_00_001.insp`.
 
 If you are working on a wide angle file, and the file is a selfies file ( [how to knonw a file is a selfies file](#INSExtraInfo) ), you should use `IMG_19700101_000000_10_001.insp` which `(VIN Channel)` is '1' instead .
 

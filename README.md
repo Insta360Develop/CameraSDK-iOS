@@ -470,11 +470,11 @@ Audio and video stream is based on SCMP(Spherical Camera Messaging Protocol). If
 
 `INSCameraMediaSession` is the central class to work with audio & video streams for Insta360 camera. It has these functions:
 
-1. You can configure the input (the camera) by set the `expectedAudioSampleRate`, `expectedVideoResolution` and `gyroPlayMode`.
-2. Control the camera's input streams, turn on by calling `startRunningWithCompletion:`, turn off by call `stopRunningWithCompletion:`.
+1. You can configure the input (the camera) by setting the `expectedAudioSampleRate`, `expectedVideoResolution` and `gyroPlayMode`.
+2. Control the camera's input streams, turn on by calling `startRunningWithCompletion:`, turn off by calling `stopRunningWithCompletion:`.
 3. Parse and decode media data, stitch the video.
 4. Distribute outputs to `INSCameraMediaPluggable` such as `INSCameraFlatPanoOutput`.
-5. When the session is running, you can change the input configurations, plug or unplug pluggables, make the changes working by call `commitChangesWithCompletion:`.
+5. When the session is running, you can change the input configurations, plug or unplug pluggables, make the changes working by calling `commitChangesWithCompletion:`.
 
 ### <a name="Preview" />Preview</a>
 

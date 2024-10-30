@@ -287,7 +287,7 @@ options.inerProccess = false;
 }];
 ```
 
-> Note: `true` indicates that fusion is not required, while `false` indicates that fusion is necessary. The X4 supports in-camera fusion, so it only needs to be set to `true`, while other camera models should be set to `false`. When the X4 is in HDR Photo mode, captured photos will always have the fused effect. Therefore, when using the X4, HDR effects can only be disabled by switching to a different mode.
+> Note: `true` indicates that fusion is not required, while `false` indicates that fusion is necessary for outputting HDR photos. The X4 supports in-camera fusion, so it only needs to be set to `true`, while other camera models should be set to `false`. When the X4 is in HDR Photo mode, captured photos will always have the fused effect. Therefore, when using the X4, HDR effects can only be disabled by switching to a different mode.
 
 #### <a name="Video_Caputure" />Video Capture</a>
 

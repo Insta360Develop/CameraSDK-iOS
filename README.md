@@ -278,7 +278,7 @@ INSTakePictureOptions *options = [[INSTakePictureOptions alloc] init];
 options.mode = INSPhotoModeAeb;
 options.AEBEVBias = @[@(0), @(-2), @(-1), @(1), @(2)];
 options.generateManually = YES;
-/// x4
+/// X4
 options.inerProccess = true;
 /// other
 options.inerProccess = false;

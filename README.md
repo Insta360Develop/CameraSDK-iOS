@@ -370,7 +370,7 @@ NSArray *types = @[@(INSPhotographyOptionsTypeStillExposureOptions)];
 ```
 
 ```Objective-C
-// On device processing pureshot only support on x4, default On once pureshot is set.
+// On-device processing for PureShot is only supported on the X4 and is enabled by default when PureShot is set.
 INSPhotographyOptions *options = [[INSPhotographyOptions alloc] init];
 options.rawCaptureType = INSCameraRawCaptureTypePureshot;
 NSArray *types = @[@(INSCameraRawCaptureType)];

@@ -50,9 +50,7 @@ We suggest that you use the same protocol to control the camera in the whole dev
 
 ## <a name="Integration" />Integration</a>
 
-- Download the sdk from the official website
-
- - https://www.insta360.com/cn/sdk/home
+- Download the SDK
 
 ```ogdl
 binary "#INSCoreMedia:By applying for authorization from Insta360#" == 1.25.30

@@ -62,7 +62,7 @@ binary "#INSCameraSDK-osc:By applying for authorization from Insta360#" == 3.0.5
 1. Embed the INSCameraSDK and INSCoreMedia frameworks to your project target.
 <div align=center><img src="./images/embedframework.png"/></div>
 
-2. If you need to connect the camera via wired, you should add the following item into Info.plist. Otherwise, skip the following steps.
+2. If you need to connect the camera via wired, you should add the following item into Info.plist. One X2, X3, and X4 do not support wired connection with iOS device. Please skip the following steps.
 
 - Key is *Supported external accessory protocols*, value is an Array with following items `com.insta360.camera`(Nano), `com.insta360.onecontrol`(ONE), `com.insta360.onexcontrol`(ONE X), `com.insta360.nanoscontrol`(Nano S) and `com.insta360.onercontrol`(ONE R)
 <div align=center><img src="./images/infoplist.png"/></div>

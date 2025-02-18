@@ -24,8 +24,8 @@ We suggest that you use the same protocol to control the camera in the whole dev
 	- [Status](#Status)
 	- [Heartbeat](#Heartbeat)
 - [Commands](#Commands)
-	- [Take picture](#Take_Picture)
-	- [Video capture](#Video_Caputure)
+	- [Take Picture](#Take_Picture)
+	- [Record Video](#Record_Video)
 	- [Photography options](#Set_Photography_Options)
 	- [Multi photography options](#Multi_PhotographyOptions)
 	- [Timelapse options](#Timelapse_Options)
@@ -287,7 +287,7 @@ options.inerProccess = false;
 
 > Note: `true` indicates that fusion is not required for outputting HDR photos, while `false` indicates that fusion is necessary. The X4 supports in-camera fusion, so it only needs to be set to `true`, while other camera models should be set to `false`. When the X4 is in HDR Photo mode, captured photos will always have the fused effect. Therefore, when using the X4, HDR effects can only be disabled by switching to a different mode.
 
-#### <a name="Video_Caputure" />Video Capture</a>
+#### <a name="Record_Video" />Record Video</a>
 
 Call `setOptions:completion` to change shooting mode.
 

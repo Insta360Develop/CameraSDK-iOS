@@ -278,14 +278,14 @@ options.AEBEVBias = @[@(0), @(-2), @(-1), @(1), @(2)];
 options.generateManually = YES;
 /// X4
 options.inerProccess = true;
-/// other
+/// others
 options.inerProccess = false;
 [[INSCameraManager sharedManager].commandManager takePictureWithOptions:options completion:^(NSError * _Nullable error, INSCameraPhotoInfo * _Nullable photoInfo) {
     NSLog(@"take hdr picture: %@, %@",photoInfo.uri,photoInfo.hdrUris);
 }];
 ```
 
-> Note: `true` indicates that fusion is not required for outputting HDR photos, while `false` indicates that fusion is necessary. The X4 supports in-camera fusion, so it only needs to be set to `true`, while other camera models should be set to `false`. When the X4 is in HDR Photo mode, captured photos will always have the fused effect. Therefore, when using the X4, HDR effects can only be disabled by switching to a different mode.
+> Note: `true` indicates that fusion is not required for outputting HDR photos, while `false` indicates that fusion is necessary. The X4 supports in-camera HDR fusion, so it only needs to be set to `true`, while other camera models should be set to `false`. When the X4 is in HDR Photo mode, captured photos will always have the fused effect. Therefore, when using the X4, HDR effects can only be disabled by switching to a different mode.
 
 #### <a name="Record_Video" />Record Video</a>
 
@@ -305,12 +305,12 @@ options.videoSubMode = self.INSVideoSubModeNormal;
                 
 }];
 
-- When shooting x4, you need to switch to the corresponding shooting mode first.
+- When using the X4, you need to switch to the corresponding shooting mode first.
 
 Call `startCaptureWithOptions:completion` to start recording, and call `stopCaptureWithOptions:completion` to stop the recording.
 
 ```Objective-C
-// start capture
+// start recording
 INSCaptureOptions *options = [[INSCaptureOptions alloc] init];
 [[INSCameraManager sharedManager].commandManager startCaptureWithOptions:options completion:^(NSError * _Nullable error) {
     if (error) {
@@ -318,7 +318,7 @@ INSCaptureOptions *options = [[INSCaptureOptions alloc] init];
     }
 }];
 
-// stop capture
+// stop recording
 INSCaptureOptions *options = [[INSCaptureOptions alloc] init];
 [[INSCameraManager sharedManager].commandManager stopCaptureWithOptions:options completion:^(NSError * _Nullable error, INSCameraVideoInfo * _Nullable videoInfo) {
     NSLog(@"video url: %@",videoInfo.uri);
@@ -327,12 +327,12 @@ INSCaptureOptions *options = [[INSCaptureOptions alloc] init];
 
 #### <a name="Set_Photography_Options" />Set Photography Options</a>
 
-The INSCameraSDK also provide you the API to change photography options, such as EV, white balance, exposure program, iso and shutter.
+The INSCameraSDK also provides APIs to adjust photography options, such as EV, white balance, exposure program, ISO and shutter speed.
 
 As the shutter speed of still and video may be different, set stillExposure to manual program will not effect the live stream, so you need to call `setPhotographyOptions` again to set the liveStream's videoExposure. Note that the shutter speed of videoExposure should not be larger than 1.0/framerate.
 
 ```Objective-C
-// live stream, x4 does not require setup.
+// live stream, X4 does not require setup.
 INSCameraExposureOptions *videoExposureOptions = [[INSCameraExposureOptions alloc] init];
 videoExposureOptions.program = INSCameraExposureProgramManual;
 videoExposureOptions.iso = 200;
@@ -368,7 +368,7 @@ NSArray *types = @[@(INSPhotographyOptionsTypeStillExposureOptions)];
 ```
 
 ```Objective-C
-// On-device processing for PureShot is only supported on the X4 and is enabled by default when PureShot is set.
+// In-camera processing for PureShot is only supported on the X4 and is enabled by default when PureShot is set.
 INSPhotographyOptions *options = [[INSPhotographyOptions alloc] init];
 options.rawCaptureType = INSCameraRawCaptureTypePureshot;
 NSArray *types = @[@(INSCameraRawCaptureType)];
@@ -380,7 +380,7 @@ NSArray *types = @[@(INSCameraRawCaptureType)];
 ```
 
 ```Objective-C
-// On device stitching only support on x4.
+// In-camera stitching is only supported on X4.
 INSCameraOptions *options = [[INSCameraOptions alloc] init];
 options.enableInternalSplicing = true;
 NSArray *types = @[@(INSCameraOptionsTypeInternalSplicing)];

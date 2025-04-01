@@ -45,7 +45,6 @@ We suggest that you use the same protocol to control the camera in the whole dev
 	- [Gyroscope data](#Gyroscope_data)
 	- [EXIF & XMP](#EXIF&XMP)
 - [Playback](#Playback)
-- [Internal parameters](#Internal_parameters)
 - [OSC](#OSC)
 
 ## <a name="Integration" />Integration</a>
@@ -1290,33 +1289,6 @@ Using `INSRenderView` to display the pano file, and using `INSPreviewer2` to pla
 }
 ```
 
-## <a name="Internal_parameters" />Internal parameters</a>
-
-* Insta360 fisheye distortion:
-
-<div align=left><img src="./images/INSFisheyeDistortion.png"/></div>
-
-* Opencv fisheye distortion:
-
-<div align=left><img src="./images/OpenCVFisheyeDistortion.png"/></div>
-
-Using `INSOffsetParser` to get the `INSOffsetParameter` internal parameters
-
-```Objective-C
-NSURL *url = #source url#
-INSImageInfoParser *parser = [[INSImageInfoParser alloc] initWithURL:url];
-if ([parser open]) {
-    INSExtraInfo *extraInfo = parser.extraInfo;
-    
-    INSOffsetParser *offsetParser =
-    [[INSOffsetParser alloc] initWithOffset:extraInfo.metadata.offset
-                                      width:extraInfo.metadata.dimension.width
-                                     height:extraInfo.metadata.dimension.height];
-    for (INSOffsetParameter *param in offsetParser.parameters) {
-        NSLog(@"Internal parameters: %@", param);
-    }
-}
-```
 
 ## <a name="OSC" />OSC</a>
 

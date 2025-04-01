@@ -1,7 +1,7 @@
 ## How to get?
 Please visit [https://www.insta360.com/sdk/apply](https://www.insta360.com/sdk/apply) to apply for the latest SDK.
 
-# CameraSDK-iOS
+# iOS SDK
 
 You can learn how to control the Insta360 camera in the following section. And the camera supports the following two communication protocols:
 
